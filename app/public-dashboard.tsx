@@ -7,6 +7,7 @@ import {
   Pressable,
   StyleSheet,
   Dimensions,
+  Image,
 } from 'react-native';
 import { Stack, router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -22,6 +23,7 @@ export default function PublicDashboardScreen() {
 
   const recentNews = news.slice(0, 3);
   const upcomingEvents = events.slice(0, 3);
+  const recentMedia = media.slice(0, 6);
 
   return (
     <>
@@ -67,6 +69,57 @@ export default function PublicDashboardScreen() {
               <Text style={[styles.statLabel, { color: colors.black }]}>Événements</Text>
             </View>
           </View>
+
+          {/* Media Gallery */}
+          {media.length > 0 && (
+            <View style={commonStyles.section}>
+              <View style={styles.sectionHeader}>
+                <Text style={[commonStyles.subtitle, { color: colors.primary }]}>
+                  Galerie Photos & Vidéos
+                </Text>
+                <Pressable onPress={() => router.push('/media-gallery')}>
+                  <Text style={styles.seeAllText}>Voir tout</Text>
+                </Pressable>
+              </View>
+              <View style={styles.mediaGrid}>
+                {recentMedia.map((item) => (
+                  <Pressable
+                    key={item.id}
+                    style={styles.mediaItem}
+                    onPress={() => router.push(`/media-gallery?id=${item.id}`)}
+                  >
+                    {item.type === 'image' ? (
+                      <Image
+                        source={{ uri: item.url }}
+                        style={styles.mediaImage}
+                        resizeMode="cover"
+                      />
+                    ) : (
+                      <View style={styles.videoThumbnail}>
+                        <Image
+                          source={{ uri: item.url }}
+                          style={styles.mediaImage}
+                          resizeMode="cover"
+                        />
+                        <View style={styles.playIconOverlay}>
+                          <IconSymbol name="play.circle.fill" size={48} color={colors.white} />
+                        </View>
+                      </View>
+                    )}
+                    <View style={styles.mediaInfo}>
+                      <Text style={styles.mediaTitle} numberOfLines={1}>
+                        {item.title}
+                      </Text>
+                      <Text style={styles.mediaDate}>{item.date}</Text>
+                    </View>
+                  </Pressable>
+                ))}
+              </View>
+              <Text style={styles.mediaCount}>
+                {media.length} {media.length === 1 ? 'média disponible' : 'médias disponibles'}
+              </Text>
+            </View>
+          )}
 
           {/* Recent News */}
           <View style={commonStyles.section}>
@@ -141,23 +194,6 @@ export default function PublicDashboardScreen() {
               ))}
             </View>
           </View>
-
-          {/* Media Gallery Preview */}
-          {media.length > 0 && (
-            <View style={commonStyles.section}>
-              <View style={styles.sectionHeader}>
-                <Text style={[commonStyles.subtitle, { color: colors.primary }]}>
-                  Galerie Média
-                </Text>
-                <Pressable onPress={() => router.push('/media-gallery')}>
-                  <Text style={styles.seeAllText}>Voir tout</Text>
-                </Pressable>
-              </View>
-              <Text style={styles.mediaCount}>
-                {media.length} {media.length === 1 ? 'média disponible' : 'médias disponibles'}
-              </Text>
-            </View>
-          )}
 
           {/* Quick Actions */}
           <View style={commonStyles.section}>
@@ -243,6 +279,57 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.accent,
     fontWeight: '600',
+  },
+  mediaGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+    marginBottom: 12,
+  },
+  mediaItem: {
+    width: (width - 56) / 2,
+    backgroundColor: colors.white,
+    borderRadius: 12,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  mediaImage: {
+    width: '100%',
+    height: 120,
+    backgroundColor: colors.card,
+  },
+  videoThumbnail: {
+    position: 'relative',
+  },
+  playIconOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+  },
+  mediaInfo: {
+    padding: 8,
+  },
+  mediaTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.text,
+    marginBottom: 4,
+  },
+  mediaDate: {
+    fontSize: 12,
+    color: colors.textSecondary,
+  },
+  mediaCount: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    fontStyle: 'italic',
+    textAlign: 'center',
   },
   newsCard: {
     backgroundColor: colors.white,
@@ -345,11 +432,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: colors.textSecondary,
     marginTop: 2,
-  },
-  mediaCount: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    fontStyle: 'italic',
   },
   quickActionButton: {
     flexDirection: 'row',
