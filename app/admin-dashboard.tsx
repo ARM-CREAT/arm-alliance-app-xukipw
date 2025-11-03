@@ -9,35 +9,51 @@ import {
   Alert,
   Platform,
 } from 'react-native';
-import { Stack, router } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { colors, commonStyles, buttonStyles } from '@/styles/commonStyles';
 import { IconSymbol } from '@/components/IconSymbol';
 import { useAuth } from '@/contexts/AuthContext';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { colors, commonStyles, buttonStyles } from '@/styles/commonStyles';
 import { useContent } from '@/contexts/ContentContext';
+import { Stack, router } from 'expo-router';
 
 export default function AdminDashboardScreen() {
-  const { isAdmin, logout } = useAuth();
+  const { isAdmin, logout, isLoading } = useAuth();
   const { news, events, media, refreshContent } = useContent();
 
   useEffect(() => {
-    if (!isAdmin) {
-      router.replace('/admin-login');
+    console.log('AdminDashboard - isAdmin:', isAdmin, 'isLoading:', isLoading);
+    
+    // Only redirect if not loading and not admin
+    if (!isLoading && !isAdmin) {
+      console.log('Not authenticated, redirecting to login');
+      Alert.alert(
+        'Accès refusé',
+        'Vous devez vous connecter pour accéder à cette page',
+        [
+          {
+            text: 'OK',
+            onPress: () => router.replace('/admin-login'),
+          },
+        ]
+      );
     }
-  }, [isAdmin]);
+  }, [isAdmin, isLoading]);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     Alert.alert(
       'Déconnexion',
       'Êtes-vous sûr de vouloir vous déconnecter?',
       [
-        { text: 'Annuler', style: 'cancel' },
+        {
+          text: 'Annuler',
+          style: 'cancel',
+        },
         {
           text: 'Déconnexion',
           style: 'destructive',
           onPress: async () => {
             await logout();
-            router.replace('/(tabs)/(home)');
+            router.replace('/');
           },
         },
       ]
@@ -45,10 +61,27 @@ export default function AdminDashboardScreen() {
   };
 
   const handleRefresh = async () => {
-    await refreshContent();
-    Alert.alert('Succès', 'Contenu actualisé!');
+    try {
+      await refreshContent();
+      Alert.alert('Succès', 'Contenu actualisé avec succès');
+    } catch (error) {
+      console.error('Error refreshing content:', error);
+      Alert.alert('Erreur', 'Impossible d\'actualiser le contenu');
+    }
   };
 
+  // Show loading state
+  if (isLoading) {
+    return (
+      <SafeAreaView style={[commonStyles.container, { backgroundColor: colors.background }]}>
+        <View style={styles.loadingContainer}>
+          <Text style={styles.loadingText}>Chargement...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // Don't render if not admin
   if (!isAdmin) {
     return null;
   }
@@ -57,7 +90,7 @@ export default function AdminDashboardScreen() {
     <>
       <Stack.Screen
         options={{
-          title: 'Tableau de Bord Admin',
+          title: 'Tableau de bord Admin',
           headerStyle: {
             backgroundColor: colors.primary,
           },
@@ -69,13 +102,15 @@ export default function AdminDashboardScreen() {
           ),
         }}
       />
-      <SafeAreaView style={[commonStyles.container, { backgroundColor: colors.background }]} edges={['bottom']}>
+      <SafeAreaView style={[commonStyles.container, { backgroundColor: colors.background }]}>
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
           {/* Welcome Section */}
           <View style={styles.welcomeSection}>
             <IconSymbol name="person.circle.fill" size={60} color={colors.primary} />
             <Text style={styles.welcomeTitle}>Bienvenue, Administrateur</Text>
-            <Text style={styles.welcomeSubtitle}>Gérez le contenu de l&apos;application</Text>
+            <Text style={styles.welcomeSubtitle}>
+              Gérez le contenu de l&apos;application A.R.M
+            </Text>
           </View>
 
           {/* Statistics */}
@@ -86,7 +121,7 @@ export default function AdminDashboardScreen() {
               <Text style={styles.statLabel}>Actualités</Text>
             </View>
             <View style={[styles.statCard, { backgroundColor: colors.accent }]}>
-              <IconSymbol name="calendar" size={32} color={colors.white} />
+              <IconSymbol name="calendar.badge.clock" size={32} color={colors.white} />
               <Text style={styles.statNumber}>{events.length}</Text>
               <Text style={styles.statLabel}>Événements</Text>
             </View>
@@ -97,116 +132,131 @@ export default function AdminDashboardScreen() {
             </View>
           </View>
 
-          {/* Quick Guide */}
-          <View style={commonStyles.section}>
+          {/* Management Options */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Gestion du Contenu</Text>
+            
             <Pressable
-              style={styles.guideCard}
-              onPress={() => router.push('/admin-guide')}
-            >
-              <IconSymbol name="book.fill" size={32} color={colors.accent} />
-              <View style={styles.guideContent}>
-                <Text style={styles.guideTitle}>Guide de l&apos;Administrateur</Text>
-                <Text style={styles.guideText}>
-                  Comment se connecter et modifier le contenu
-                </Text>
-              </View>
-              <IconSymbol name="chevron.right" size={24} color={colors.textSecondary} />
-            </Pressable>
-          </View>
-
-          {/* Management Actions */}
-          <View style={commonStyles.section}>
-            <Text style={[commonStyles.subtitle, { color: colors.primary }]}>
-              Gestion du Contenu
-            </Text>
-
-            <Pressable
-              style={styles.actionCard}
+              style={styles.menuItem}
               onPress={() => router.push('/manage-news')}
             >
-              <View style={styles.actionIcon}>
-                <IconSymbol name="newspaper.fill" size={28} color={colors.primary} />
+              <View style={[styles.menuIcon, { backgroundColor: colors.primary }]}>
+                <IconSymbol name="newspaper.fill" size={24} color={colors.white} />
               </View>
-              <View style={styles.actionContent}>
-                <Text style={styles.actionTitle}>Gérer les Actualités</Text>
-                <Text style={styles.actionDescription}>
+              <View style={styles.menuContent}>
+                <Text style={styles.menuTitle}>Gérer les Actualités</Text>
+                <Text style={styles.menuDescription}>
                   Ajouter, modifier ou supprimer des actualités
                 </Text>
               </View>
-              <IconSymbol name="chevron.right" size={24} color={colors.textSecondary} />
+              <IconSymbol name="chevron.right" size={20} color={colors.textSecondary} />
             </Pressable>
 
             <Pressable
-              style={styles.actionCard}
+              style={styles.menuItem}
               onPress={() => router.push('/manage-events')}
             >
-              <View style={styles.actionIcon}>
-                <IconSymbol name="calendar" size={28} color={colors.accent} />
+              <View style={[styles.menuIcon, { backgroundColor: colors.accent }]}>
+                <IconSymbol name="calendar.badge.clock" size={24} color={colors.white} />
               </View>
-              <View style={styles.actionContent}>
-                <Text style={styles.actionTitle}>Gérer les Événements</Text>
-                <Text style={styles.actionDescription}>
+              <View style={styles.menuContent}>
+                <Text style={styles.menuTitle}>Gérer les Événements</Text>
+                <Text style={styles.menuDescription}>
                   Ajouter, modifier ou supprimer des événements
                 </Text>
               </View>
-              <IconSymbol name="chevron.right" size={24} color={colors.textSecondary} />
+              <IconSymbol name="chevron.right" size={20} color={colors.textSecondary} />
             </Pressable>
 
             <Pressable
-              style={styles.actionCard}
+              style={styles.menuItem}
               onPress={() => router.push('/manage-media')}
             >
-              <View style={styles.actionIcon}>
-                <IconSymbol name="photo.stack.fill" size={28} color={colors.highlight} />
+              <View style={[styles.menuIcon, { backgroundColor: colors.highlight }]}>
+                <IconSymbol name="photo.stack.fill" size={24} color={colors.white} />
               </View>
-              <View style={styles.actionContent}>
-                <Text style={styles.actionTitle}>Gérer les Médias</Text>
-                <Text style={styles.actionDescription}>
+              <View style={styles.menuContent}>
+                <Text style={styles.menuTitle}>Gérer les Médias</Text>
+                <Text style={styles.menuDescription}>
                   Ajouter ou supprimer des photos et vidéos
                 </Text>
               </View>
-              <IconSymbol name="chevron.right" size={24} color={colors.textSecondary} />
-            </Pressable>
-
-            <Pressable
-              style={styles.actionCard}
-              onPress={() => router.push('/video-conference')}
-            >
-              <View style={styles.actionIcon}>
-                <IconSymbol name="video.fill" size={28} color={colors.secondary} />
-              </View>
-              <View style={styles.actionContent}>
-                <Text style={styles.actionTitle}>Vidéo Conférence</Text>
-                <Text style={styles.actionDescription}>
-                  Créer et gérer des conférences vidéo
-                </Text>
-              </View>
-              <IconSymbol name="chevron.right" size={24} color={colors.textSecondary} />
+              <IconSymbol name="chevron.right" size={20} color={colors.textSecondary} />
             </Pressable>
           </View>
 
-          {/* System Actions */}
-          <View style={commonStyles.section}>
-            <Text style={[commonStyles.subtitle, { color: colors.primary }]}>
-              Actions Système
-            </Text>
+          {/* Other Features */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Autres Fonctionnalités</Text>
+            
+            <Pressable
+              style={styles.menuItem}
+              onPress={() => router.push('/video-conference')}
+            >
+              <View style={[styles.menuIcon, { backgroundColor: colors.secondary }]}>
+                <IconSymbol name="video.fill" size={24} color={colors.black} />
+              </View>
+              <View style={styles.menuContent}>
+                <Text style={styles.menuTitle}>Vidéoconférence</Text>
+                <Text style={styles.menuDescription}>
+                  Créer et gérer des vidéoconférences
+                </Text>
+              </View>
+              <IconSymbol name="chevron.right" size={20} color={colors.textSecondary} />
+            </Pressable>
 
+            <Pressable
+              style={styles.menuItem}
+              onPress={() => router.push('/public-dashboard')}
+            >
+              <View style={[styles.menuIcon, { backgroundColor: colors.primary }]}>
+                <IconSymbol name="chart.bar.fill" size={24} color={colors.white} />
+              </View>
+              <View style={styles.menuContent}>
+                <Text style={styles.menuTitle}>Tableau de bord Public</Text>
+                <Text style={styles.menuDescription}>
+                  Voir les statistiques publiques
+                </Text>
+              </View>
+              <IconSymbol name="chevron.right" size={20} color={colors.textSecondary} />
+            </Pressable>
+
+            <Pressable
+              style={styles.menuItem}
+              onPress={() => router.push('/admin-guide')}
+            >
+              <View style={[styles.menuIcon, { backgroundColor: colors.accent }]}>
+                <IconSymbol name="book.fill" size={24} color={colors.white} />
+              </View>
+              <View style={styles.menuContent}>
+                <Text style={styles.menuTitle}>Guide d&apos;Administration</Text>
+                <Text style={styles.menuDescription}>
+                  Instructions pour gérer l&apos;application
+                </Text>
+              </View>
+              <IconSymbol name="chevron.right" size={20} color={colors.textSecondary} />
+            </Pressable>
+          </View>
+
+          {/* Actions */}
+          <View style={styles.actionsSection}>
             <Pressable
               style={[buttonStyles.accent, { marginBottom: 12 }]}
               onPress={handleRefresh}
             >
               <IconSymbol name="arrow.clockwise" size={20} color={colors.white} />
               <Text style={[buttonStyles.text, { marginLeft: 8 }]}>
-                Actualiser l&apos;Application
+                Actualiser le contenu
               </Text>
             </Pressable>
 
             <Pressable
-              style={[buttonStyles.outline, { borderColor: colors.error }]}
+              style={[buttonStyles.primary, { backgroundColor: colors.error }]}
               onPress={handleLogout}
             >
-              <Text style={[buttonStyles.textOutline, { color: colors.error }]}>
-                Se Déconnecter
+              <IconSymbol name="rectangle.portrait.and.arrow.right" size={20} color={colors.white} />
+              <Text style={[buttonStyles.text, { marginLeft: 8 }]}>
+                Se déconnecter
               </Text>
             </Pressable>
           </View>
@@ -223,28 +273,38 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: 40,
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontSize: 18,
+    color: colors.textSecondary,
+  },
   welcomeSection: {
     backgroundColor: colors.card,
     padding: 24,
     alignItems: 'center',
-    marginBottom: 24,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
   },
   welcomeTitle: {
     fontSize: 24,
     fontWeight: '800',
     color: colors.text,
-    marginTop: 12,
+    marginTop: 16,
+    marginBottom: 8,
   },
   welcomeSubtitle: {
     fontSize: 16,
     color: colors.textSecondary,
-    marginTop: 4,
+    textAlign: 'center',
   },
   statsContainer: {
     flexDirection: 'row',
-    paddingHorizontal: 20,
+    padding: 16,
     gap: 12,
-    marginBottom: 24,
   },
   statCard: {
     flex: 1,
@@ -264,59 +324,47 @@ const styles = StyleSheet.create({
     marginTop: 4,
     textAlign: 'center',
   },
-  actionCard: {
+  section: {
+    padding: 16,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: colors.text,
+    marginBottom: 16,
+  },
+  menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.white,
-    borderRadius: 12,
+    backgroundColor: colors.card,
     padding: 16,
+    borderRadius: 12,
     marginBottom: 12,
     borderWidth: 1,
     borderColor: colors.border,
   },
-  actionIcon: {
+  menuIcon: {
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: colors.card,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: 16,
   },
-  actionContent: {
+  menuContent: {
     flex: 1,
   },
-  actionTitle: {
+  menuTitle: {
     fontSize: 16,
     fontWeight: '700',
     color: colors.text,
     marginBottom: 4,
   },
-  actionDescription: {
+  menuDescription: {
     fontSize: 14,
     color: colors.textSecondary,
   },
-  guideCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.card,
-    borderRadius: 12,
-    padding: 20,
-    borderWidth: 2,
-    borderColor: colors.accent,
-  },
-  guideContent: {
-    flex: 1,
-    marginLeft: 12,
-  },
-  guideTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: colors.text,
-    marginBottom: 4,
-  },
-  guideText: {
-    fontSize: 14,
-    color: colors.textSecondary,
+  actionsSection: {
+    padding: 16,
   },
 });

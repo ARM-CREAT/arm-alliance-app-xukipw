@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -20,28 +20,52 @@ export default function AdminLoginScreen() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, isAdmin } = useAuth();
+
+  // If already logged in, redirect to dashboard
+  useEffect(() => {
+    if (isAdmin) {
+      console.log('Already logged in, redirecting to dashboard');
+      router.replace('/admin-dashboard');
+    }
+  }, [isAdmin]);
 
   const handleLogin = async () => {
+    console.log('Login attempt started');
+    
     if (!password) {
       Alert.alert('Erreur', 'Veuillez entrer le mot de passe');
       return;
     }
 
     setIsLoading(true);
-    const success = await login(password);
-    setIsLoading(false);
+    
+    try {
+      console.log('Calling login function...');
+      const success = await login(password);
+      console.log('Login result:', success);
 
-    if (success) {
-      Alert.alert('Succès', 'Connexion réussie!', [
-        {
-          text: 'OK',
-          onPress: () => router.replace('/admin-dashboard'),
-        },
-      ]);
-    } else {
-      Alert.alert('Erreur', 'Mot de passe incorrect');
-      setPassword('');
+      if (success) {
+        console.log('Login successful, showing alert');
+        Alert.alert('Succès', 'Connexion réussie!', [
+          {
+            text: 'OK',
+            onPress: () => {
+              console.log('Navigating to admin dashboard');
+              router.replace('/admin-dashboard');
+            },
+          },
+        ]);
+      } else {
+        console.log('Login failed - incorrect password');
+        Alert.alert('Erreur', 'Mot de passe incorrect');
+        setPassword('');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      Alert.alert('Erreur', 'Une erreur est survenue lors de la connexion');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -79,9 +103,12 @@ export default function AdminLoginScreen() {
                   value={password}
                   onChangeText={setPassword}
                   placeholder="Entrez le mot de passe"
+                  placeholderTextColor={colors.textSecondary}
                   secureTextEntry={!showPassword}
                   autoCapitalize="none"
                   autoCorrect={false}
+                  onSubmitEditing={handleLogin}
+                  returnKeyType="done"
                 />
                 <Pressable
                   style={styles.eyeButton}
@@ -117,6 +144,12 @@ export default function AdminLoginScreen() {
               <IconSymbol name="info.circle.fill" size={20} color={colors.accent} />
               <Text style={styles.infoText}>
                 Cet espace est réservé aux administrateurs du parti A.R.M
+              </Text>
+            </View>
+
+            <View style={styles.hintBox}>
+              <Text style={styles.hintText}>
+                💡 Mot de passe par défaut: ARM2024Admin!
               </Text>
             </View>
           </View>
@@ -197,5 +230,17 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.textSecondary,
     lineHeight: 20,
+  },
+  hintBox: {
+    backgroundColor: colors.secondary,
+    padding: 12,
+    borderRadius: 8,
+    marginTop: 16,
+    alignItems: 'center',
+  },
+  hintText: {
+    fontSize: 13,
+    color: colors.black,
+    fontWeight: '600',
   },
 });
