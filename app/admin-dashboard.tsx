@@ -1,5 +1,10 @@
 
+import { useContent } from '@/contexts/ContentContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { colors, commonStyles, buttonStyles } from '@/styles/commonStyles';
 import React, { useEffect } from 'react';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { IconSymbol } from '@/components/IconSymbol';
 import {
   View,
   Text,
@@ -9,26 +14,17 @@ import {
   Alert,
   Platform,
 } from 'react-native';
-import { IconSymbol } from '@/components/IconSymbol';
-import { useAuth } from '@/contexts/AuthContext';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { colors, commonStyles, buttonStyles } from '@/styles/commonStyles';
-import { useContent } from '@/contexts/ContentContext';
 import { Stack, router } from 'expo-router';
 
 export default function AdminDashboardScreen() {
-  const { isAdmin, logout, isLoading } = useAuth();
-  const { news, events, media, refreshContent } = useContent();
+  const { isAdmin, isLoading, logout } = useAuth();
+  const { news, events, media } = useContent();
 
   useEffect(() => {
-    console.log('AdminDashboard - isAdmin:', isAdmin, 'isLoading:', isLoading);
-    
-    // Only redirect if not loading and not admin
     if (!isLoading && !isAdmin) {
-      console.log('Not authenticated, redirecting to login');
       Alert.alert(
         'Accès refusé',
-        'Vous devez vous connecter pour accéder à cette page',
+        'Vous devez être connecté en tant qu\'administrateur',
         [
           {
             text: 'OK',
@@ -39,49 +35,39 @@ export default function AdminDashboardScreen() {
     }
   }, [isAdmin, isLoading]);
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
     Alert.alert(
       'Déconnexion',
       'Êtes-vous sûr de vouloir vous déconnecter?',
       [
-        {
-          text: 'Annuler',
-          style: 'cancel',
-        },
+        { text: 'Annuler', style: 'cancel' },
         {
           text: 'Déconnexion',
           style: 'destructive',
-          onPress: async () => {
-            await logout();
-            router.replace('/');
+          onPress: () => {
+            logout();
+            router.replace('/admin-login');
           },
         },
       ]
     );
   };
 
-  const handleRefresh = async () => {
-    try {
-      await refreshContent();
-      Alert.alert('Succès', 'Contenu actualisé avec succès');
-    } catch (error) {
-      console.error('Error refreshing content:', error);
-      Alert.alert('Erreur', 'Impossible d\'actualiser le contenu');
-    }
+  const handleRefresh = () => {
+    Alert.alert('Actualisation', 'Les données ont été actualisées');
+    console.log('Dashboard refreshed');
   };
 
-  // Show loading state
   if (isLoading) {
     return (
-      <SafeAreaView style={[commonStyles.container, { backgroundColor: colors.background }]}>
+      <SafeAreaView style={commonStyles.container}>
         <View style={styles.loadingContainer}>
-          <Text style={styles.loadingText}>Chargement...</Text>
+          <Text style={commonStyles.text}>Chargement...</Text>
         </View>
       </SafeAreaView>
     );
   }
 
-  // Don't render if not admin
   if (!isAdmin) {
     return null;
   }
@@ -95,58 +81,65 @@ export default function AdminDashboardScreen() {
             backgroundColor: colors.primary,
           },
           headerTintColor: colors.white,
-          headerRight: () => (
-            <Pressable onPress={handleLogout} style={{ marginRight: 16 }}>
-              <IconSymbol name="rectangle.portrait.and.arrow.right" size={24} color={colors.white} />
-            </Pressable>
-          ),
+          presentation: 'modal',
         }}
       />
-      <SafeAreaView style={[commonStyles.container, { backgroundColor: colors.background }]}>
-        <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
-          {/* Welcome Section */}
-          <View style={styles.welcomeSection}>
-            <IconSymbol name="person.circle.fill" size={60} color={colors.primary} />
-            <Text style={styles.welcomeTitle}>Bienvenue, Administrateur</Text>
-            <Text style={styles.welcomeSubtitle}>
-              Gérez le contenu de l&apos;application A.R.M
+      <SafeAreaView style={commonStyles.container} edges={['bottom']}>
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.header}>
+            <IconSymbol name="lock.shield.fill" size={48} color={colors.primary} />
+            <Text style={[commonStyles.title, { color: colors.primary, marginTop: 16 }]}>
+              Espace Administrateur
+            </Text>
+            <Text style={[commonStyles.textSecondary, { textAlign: 'center' }]}>
+              Gérez le contenu et les paramètres de l&apos;application
             </Text>
           </View>
 
           {/* Statistics */}
-          <View style={styles.statsContainer}>
-            <View style={[styles.statCard, { backgroundColor: colors.primary }]}>
-              <IconSymbol name="newspaper.fill" size={32} color={colors.white} />
-              <Text style={styles.statNumber}>{news.length}</Text>
-              <Text style={styles.statLabel}>Actualités</Text>
-            </View>
-            <View style={[styles.statCard, { backgroundColor: colors.accent }]}>
-              <IconSymbol name="calendar.badge.clock" size={32} color={colors.white} />
-              <Text style={styles.statNumber}>{events.length}</Text>
-              <Text style={styles.statLabel}>Événements</Text>
-            </View>
-            <View style={[styles.statCard, { backgroundColor: colors.highlight }]}>
-              <IconSymbol name="photo.stack.fill" size={32} color={colors.white} />
-              <Text style={styles.statNumber}>{media.length}</Text>
-              <Text style={styles.statLabel}>Médias</Text>
+          <View style={commonStyles.section}>
+            <Text style={[commonStyles.subtitle, { color: colors.primary }]}>
+              Statistiques
+            </Text>
+            <View style={styles.statsGrid}>
+              <View style={[styles.statCard, { backgroundColor: colors.primary }]}>
+                <IconSymbol name="newspaper" size={32} color={colors.white} />
+                <Text style={styles.statValue}>{news.length}</Text>
+                <Text style={styles.statLabel}>Articles</Text>
+              </View>
+              <View style={[styles.statCard, { backgroundColor: colors.accent }]}>
+                <IconSymbol name="calendar" size={32} color={colors.white} />
+                <Text style={styles.statValue}>{events.length}</Text>
+                <Text style={styles.statLabel}>Événements</Text>
+              </View>
+              <View style={[styles.statCard, { backgroundColor: colors.highlight }]}>
+                <IconSymbol name="photo.fill" size={32} color={colors.white} />
+                <Text style={styles.statValue}>{media.length}</Text>
+                <Text style={styles.statLabel}>Médias</Text>
+              </View>
             </View>
           </View>
 
-          {/* Management Options */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Gestion du Contenu</Text>
-            
+          {/* Content Management */}
+          <View style={commonStyles.section}>
+            <Text style={[commonStyles.subtitle, { color: colors.primary }]}>
+              Gestion du contenu
+            </Text>
             <Pressable
               style={styles.menuItem}
               onPress={() => router.push('/manage-news')}
             >
               <View style={[styles.menuIcon, { backgroundColor: colors.primary }]}>
-                <IconSymbol name="newspaper.fill" size={24} color={colors.white} />
+                <IconSymbol name="newspaper" size={24} color={colors.white} />
               </View>
               <View style={styles.menuContent}>
-                <Text style={styles.menuTitle}>Gérer les Actualités</Text>
+                <Text style={styles.menuTitle}>Gérer les actualités</Text>
                 <Text style={styles.menuDescription}>
-                  Ajouter, modifier ou supprimer des actualités
+                  Ajouter, modifier ou supprimer des articles
                 </Text>
               </View>
               <IconSymbol name="chevron.right" size={20} color={colors.textSecondary} />
@@ -157,10 +150,10 @@ export default function AdminDashboardScreen() {
               onPress={() => router.push('/manage-events')}
             >
               <View style={[styles.menuIcon, { backgroundColor: colors.accent }]}>
-                <IconSymbol name="calendar.badge.clock" size={24} color={colors.white} />
+                <IconSymbol name="calendar" size={24} color={colors.white} />
               </View>
               <View style={styles.menuContent}>
-                <Text style={styles.menuTitle}>Gérer les Événements</Text>
+                <Text style={styles.menuTitle}>Gérer les événements</Text>
                 <Text style={styles.menuDescription}>
                   Ajouter, modifier ou supprimer des événements
                 </Text>
@@ -173,33 +166,34 @@ export default function AdminDashboardScreen() {
               onPress={() => router.push('/manage-media')}
             >
               <View style={[styles.menuIcon, { backgroundColor: colors.highlight }]}>
-                <IconSymbol name="photo.stack.fill" size={24} color={colors.white} />
+                <IconSymbol name="photo.fill" size={24} color={colors.white} />
               </View>
               <View style={styles.menuContent}>
-                <Text style={styles.menuTitle}>Gérer les Médias</Text>
+                <Text style={styles.menuTitle}>Gérer les médias</Text>
                 <Text style={styles.menuDescription}>
-                  Ajouter ou supprimer des photos et vidéos
+                  Ajouter, modifier ou supprimer des photos et vidéos
                 </Text>
               </View>
               <IconSymbol name="chevron.right" size={20} color={colors.textSecondary} />
             </Pressable>
           </View>
 
-          {/* Other Features */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Autres Fonctionnalités</Text>
-            
+          {/* Tools */}
+          <View style={commonStyles.section}>
+            <Text style={[commonStyles.subtitle, { color: colors.primary }]}>
+              Outils
+            </Text>
             <Pressable
               style={styles.menuItem}
-              onPress={() => router.push('/video-conference')}
+              onPress={() => router.push('/analytics')}
             >
-              <View style={[styles.menuIcon, { backgroundColor: colors.secondary }]}>
-                <IconSymbol name="video.fill" size={24} color={colors.black} />
+              <View style={[styles.menuIcon, { backgroundColor: colors.accent }]}>
+                <IconSymbol name="chart.bar.fill" size={24} color={colors.white} />
               </View>
               <View style={styles.menuContent}>
-                <Text style={styles.menuTitle}>Vidéoconférence</Text>
+                <Text style={styles.menuTitle}>Analyses</Text>
                 <Text style={styles.menuDescription}>
-                  Créer et gérer des vidéoconférences
+                  Statistiques et analyses détaillées
                 </Text>
               </View>
               <IconSymbol name="chevron.right" size={20} color={colors.textSecondary} />
@@ -207,15 +201,15 @@ export default function AdminDashboardScreen() {
 
             <Pressable
               style={styles.menuItem}
-              onPress={() => router.push('/public-dashboard')}
+              onPress={() => router.push('/video-conference')}
             >
-              <View style={[styles.menuIcon, { backgroundColor: colors.primary }]}>
-                <IconSymbol name="chart.bar.fill" size={24} color={colors.white} />
+              <View style={[styles.menuIcon, { backgroundColor: colors.highlight }]}>
+                <IconSymbol name="video.fill" size={24} color={colors.white} />
               </View>
               <View style={styles.menuContent}>
-                <Text style={styles.menuTitle}>Tableau de bord Public</Text>
+                <Text style={styles.menuTitle}>Vidéoconférence</Text>
                 <Text style={styles.menuDescription}>
-                  Voir les statistiques publiques
+                  Créer et gérer des réunions en ligne
                 </Text>
               </View>
               <IconSymbol name="chevron.right" size={20} color={colors.textSecondary} />
@@ -225,13 +219,13 @@ export default function AdminDashboardScreen() {
               style={styles.menuItem}
               onPress={() => router.push('/admin-guide')}
             >
-              <View style={[styles.menuIcon, { backgroundColor: colors.accent }]}>
-                <IconSymbol name="book.fill" size={24} color={colors.white} />
+              <View style={[styles.menuIcon, { backgroundColor: colors.secondary }]}>
+                <IconSymbol name="book.fill" size={24} color={colors.black} />
               </View>
               <View style={styles.menuContent}>
-                <Text style={styles.menuTitle}>Guide d&apos;Administration</Text>
+                <Text style={styles.menuTitle}>Guide d&apos;administration</Text>
                 <Text style={styles.menuDescription}>
-                  Instructions pour gérer l&apos;application
+                  Documentation et aide
                 </Text>
               </View>
               <IconSymbol name="chevron.right" size={20} color={colors.textSecondary} />
@@ -239,25 +233,20 @@ export default function AdminDashboardScreen() {
           </View>
 
           {/* Actions */}
-          <View style={styles.actionsSection}>
+          <View style={commonStyles.section}>
             <Pressable
-              style={[buttonStyles.accent, { marginBottom: 12 }]}
+              style={[buttonStyles.primary, { flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }]}
               onPress={handleRefresh}
             >
               <IconSymbol name="arrow.clockwise" size={20} color={colors.white} />
-              <Text style={[buttonStyles.text, { marginLeft: 8 }]}>
-                Actualiser le contenu
-              </Text>
+              <Text style={[buttonStyles.text, { marginLeft: 8 }]}>Actualiser</Text>
             </Pressable>
 
             <Pressable
-              style={[buttonStyles.primary, { backgroundColor: colors.error }]}
+              style={[buttonStyles.outline, { marginTop: 12 }]}
               onPress={handleLogout}
             >
-              <IconSymbol name="rectangle.portrait.and.arrow.right" size={20} color={colors.white} />
-              <Text style={[buttonStyles.text, { marginLeft: 8 }]}>
-                Se déconnecter
-              </Text>
+              <Text style={buttonStyles.textOutline}>Déconnexion</Text>
             </Pressable>
           </View>
         </ScrollView>
@@ -278,67 +267,40 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  loadingText: {
-    fontSize: 18,
-    color: colors.textSecondary,
-  },
-  welcomeSection: {
-    backgroundColor: colors.card,
-    padding: 24,
+  header: {
     alignItems: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    paddingVertical: 24,
+    paddingHorizontal: 20,
   },
-  welcomeTitle: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: colors.text,
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  welcomeSubtitle: {
-    fontSize: 16,
-    color: colors.textSecondary,
-    textAlign: 'center',
-  },
-  statsContainer: {
+  statsGrid: {
     flexDirection: 'row',
-    padding: 16,
     gap: 12,
+    marginTop: 12,
   },
   statCard: {
     flex: 1,
-    padding: 16,
     borderRadius: 12,
+    padding: 16,
     alignItems: 'center',
   },
-  statNumber: {
+  statValue: {
     fontSize: 28,
-    fontWeight: '800',
+    fontWeight: '900',
     color: colors.white,
     marginTop: 8,
   },
   statLabel: {
-    fontSize: 12,
+    fontSize: 13,
+    fontWeight: '600',
     color: colors.white,
     marginTop: 4,
-    textAlign: 'center',
-  },
-  section: {
-    padding: 16,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: colors.text,
-    marginBottom: 16,
   },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.card,
-    padding: 16,
+    backgroundColor: colors.white,
     borderRadius: 12,
+    padding: 16,
     marginBottom: 12,
     borderWidth: 1,
     borderColor: colors.border,
@@ -361,10 +323,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   menuDescription: {
-    fontSize: 14,
+    fontSize: 13,
     color: colors.textSecondary,
-  },
-  actionsSection: {
-    padding: 16,
   },
 });

@@ -5,15 +5,11 @@ import { ScrollView, StyleSheet, View, Text, Image, Pressable, Platform, Alert }
 import { IconSymbol } from "@/components/IconSymbol";
 import { colors, commonStyles, buttonStyles } from "@/styles/commonStyles";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
 
 export default function HomeScreen() {
-  const handleDonation = (amount: number) => {
-    Alert.alert(
-      "Donation",
-      `Merci pour votre don de ${amount}€!\n\nLe système de paiement sécurisé sera bientôt disponible.`,
-      [{ text: "OK" }]
-    );
+  const handleDonation = () => {
+    router.push('/donations');
   };
 
   return (
@@ -89,31 +85,12 @@ export default function HomeScreen() {
             <Text style={[commonStyles.textSecondary, { marginBottom: 16 }]}>
               Votre contribution nous aide à construire un Mali meilleur
             </Text>
-            <View style={styles.donationButtons}>
-              <Pressable 
-                style={[buttonStyles.primary, styles.donationButton]}
-                onPress={() => handleDonation(5)}
-              >
-                <Text style={buttonStyles.text}>5€</Text>
-              </Pressable>
-              <Pressable 
-                style={[buttonStyles.primary, styles.donationButton]}
-                onPress={() => handleDonation(10)}
-              >
-                <Text style={buttonStyles.text}>10€</Text>
-              </Pressable>
-              <Pressable 
-                style={[buttonStyles.primary, styles.donationButton]}
-                onPress={() => handleDonation(20)}
-              >
-                <Text style={buttonStyles.text}>20€</Text>
-              </Pressable>
-            </View>
             <Pressable 
-              style={[buttonStyles.accent, { marginTop: 12 }]}
-              onPress={() => Alert.alert("Montant personnalisé", "Cette fonctionnalité sera bientôt disponible")}
+              style={[buttonStyles.primary, { flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }]}
+              onPress={handleDonation}
             >
-              <Text style={buttonStyles.text}>Montant personnalisé</Text>
+              <IconSymbol name="heart.fill" size={20} color={colors.white} />
+              <Text style={[buttonStyles.text, { marginLeft: 8 }]}>Faire un don</Text>
             </Pressable>
           </View>
 
@@ -161,6 +138,26 @@ export default function HomeScreen() {
                 </Pressable>
               </Link>
 
+              <Link href="/chat" asChild>
+                <Pressable style={styles.actionCard}>
+                  <View style={[styles.actionIcon, { backgroundColor: colors.accent }]}>
+                    <IconSymbol name="bubble.left.and.bubble.right.fill" size={28} color={colors.white} />
+                  </View>
+                  <Text style={styles.actionTitle}>Chat</Text>
+                  <Text style={styles.actionDescription}>Discussion publique</Text>
+                </Pressable>
+              </Link>
+
+              <Link href="/media-gallery" asChild>
+                <Pressable style={styles.actionCard}>
+                  <View style={[styles.actionIcon, { backgroundColor: colors.highlight }]}>
+                    <IconSymbol name="photo.fill" size={28} color={colors.white} />
+                  </View>
+                  <Text style={styles.actionTitle}>Galerie</Text>
+                  <Text style={styles.actionDescription}>Photos & Vidéos</Text>
+                </Pressable>
+              </Link>
+
               <Link href="/regions" asChild>
                 <Pressable style={styles.actionCard}>
                   <View style={[styles.actionIcon, { backgroundColor: colors.primary }]}>
@@ -168,6 +165,46 @@ export default function HomeScreen() {
                   </View>
                   <Text style={styles.actionTitle}>Régions</Text>
                   <Text style={styles.actionDescription}>Régions du Mali</Text>
+                </Pressable>
+              </Link>
+
+              <Link href="/public-dashboard" asChild>
+                <Pressable style={styles.actionCard}>
+                  <View style={[styles.actionIcon, { backgroundColor: colors.accent }]}>
+                    <IconSymbol name="chart.bar.fill" size={28} color={colors.white} />
+                  </View>
+                  <Text style={styles.actionTitle}>Tableau de bord</Text>
+                  <Text style={styles.actionDescription}>Vue d&apos;ensemble</Text>
+                </Pressable>
+              </Link>
+
+              <Link href="/video-conference" asChild>
+                <Pressable style={styles.actionCard}>
+                  <View style={[styles.actionIcon, { backgroundColor: colors.highlight }]}>
+                    <IconSymbol name="video.fill" size={28} color={colors.white} />
+                  </View>
+                  <Text style={styles.actionTitle}>Vidéoconférence</Text>
+                  <Text style={styles.actionDescription}>Réunions en ligne</Text>
+                </Pressable>
+              </Link>
+
+              <Link href="/share" asChild>
+                <Pressable style={styles.actionCard}>
+                  <View style={[styles.actionIcon, { backgroundColor: '#1877F2' }]}>
+                    <IconSymbol name="square.and.arrow.up.fill" size={28} color={colors.white} />
+                  </View>
+                  <Text style={styles.actionTitle}>Partager</Text>
+                  <Text style={styles.actionDescription}>Partagez A.R.M</Text>
+                </Pressable>
+              </Link>
+
+              <Link href="/install-pwa" asChild>
+                <Pressable style={styles.actionCard}>
+                  <View style={[styles.actionIcon, { backgroundColor: colors.success }]}>
+                    <IconSymbol name="arrow.down.circle.fill" size={28} color={colors.white} />
+                  </View>
+                  <Text style={styles.actionTitle}>Installer</Text>
+                  <Text style={styles.actionDescription}>Installer l&apos;app</Text>
                 </Pressable>
               </Link>
 
@@ -276,14 +313,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.card,
     paddingVertical: 24,
     marginTop: 8,
-  },
-  donationButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 12,
-  },
-  donationButton: {
-    flex: 1,
   },
   actionsSection: {
     marginTop: 24,
