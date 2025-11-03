@@ -1,5 +1,6 @@
 
-import React from 'react';
+import { colors, commonStyles } from '@/styles/commonStyles';
+import { useContent } from '@/contexts/ContentContext';
 import {
   View,
   Text,
@@ -8,28 +9,46 @@ import {
   StyleSheet,
   Dimensions,
   Image,
+  ActivityIndicator,
 } from 'react-native';
-import { Stack, router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { colors, commonStyles } from '@/styles/commonStyles';
 import { IconSymbol } from '@/components/IconSymbol';
-import { useContent } from '@/contexts/ContentContext';
+import React from 'react';
+import { Stack, router } from 'expo-router';
 import { maliRegions } from '@/data/maliRegions';
 
 const { width } = Dimensions.get('window');
 
 export default function PublicDashboardScreen() {
-  const { news, events, media } = useContent();
+  const { news, events, media, isLoading } = useContent();
 
-  const recentNews = news.slice(0, 3);
-  const upcomingEvents = events.slice(0, 3);
-  const recentMedia = media.slice(0, 6);
+  if (isLoading) {
+    return (
+      <>
+        <Stack.Screen
+          options={{
+            title: 'Tableau de bord public',
+            headerStyle: {
+              backgroundColor: colors.primary,
+            },
+            headerTintColor: colors.white,
+          }}
+        />
+        <SafeAreaView style={[commonStyles.container, { backgroundColor: colors.background }]}>
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={colors.primary} />
+            <Text style={[commonStyles.text, { marginTop: 16 }]}>Chargement...</Text>
+          </View>
+        </SafeAreaView>
+      </>
+    );
+  }
 
   return (
     <>
       <Stack.Screen
         options={{
-          title: 'Tableau de Bord Public',
+          title: 'Tableau de bord public',
           headerStyle: {
             backgroundColor: colors.primary,
           },
@@ -37,112 +56,79 @@ export default function PublicDashboardScreen() {
         }}
       />
       <SafeAreaView style={[commonStyles.container, { backgroundColor: colors.background }]} edges={['bottom']}>
-        <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
-          {/* Hero Stats */}
-          <View style={styles.heroSection}>
-            <Text style={styles.heroTitle}>Tableau de Bord A.R.M</Text>
-            <Text style={styles.heroSubtitle}>
-              Suivez l&apos;activité de notre parti en temps réel
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Header */}
+          <View style={styles.header}>
+            <IconSymbol name="chart.bar.fill" size={48} color={colors.accent} />
+            <Text style={[commonStyles.title, { color: colors.primary, marginTop: 16 }]}>
+              Tableau de bord
+            </Text>
+            <Text style={[commonStyles.textSecondary, { textAlign: 'center' }]}>
+              Vue d&apos;ensemble des activités du parti
             </Text>
           </View>
 
-          {/* Key Statistics */}
-          <View style={styles.statsGrid}>
-            <View style={[styles.statBox, { backgroundColor: colors.primary }]}>
-              <IconSymbol name="person.3.fill" size={36} color={colors.white} />
-              <Text style={styles.statValue}>7</Text>
-              <Text style={styles.statLabel}>Membres du Bureau</Text>
-            </View>
-            <View style={[styles.statBox, { backgroundColor: colors.accent }]}>
-              <IconSymbol name="map.fill" size={36} color={colors.white} />
-              <Text style={styles.statValue}>{maliRegions.length}</Text>
-              <Text style={styles.statLabel}>Régions</Text>
-            </View>
-            <View style={[styles.statBox, { backgroundColor: colors.highlight }]}>
-              <IconSymbol name="newspaper.fill" size={36} color={colors.white} />
-              <Text style={styles.statValue}>{news.length}</Text>
-              <Text style={styles.statLabel}>Actualités</Text>
-            </View>
-            <View style={[styles.statBox, { backgroundColor: colors.secondary }]}>
-              <IconSymbol name="calendar" size={36} color={colors.black} />
-              <Text style={[styles.statValue, { color: colors.black }]}>{events.length}</Text>
-              <Text style={[styles.statLabel, { color: colors.black }]}>Événements</Text>
+          {/* Quick Stats */}
+          <View style={commonStyles.section}>
+            <Text style={[commonStyles.subtitle, { color: colors.primary }]}>
+              Statistiques
+            </Text>
+            <View style={styles.statsGrid}>
+              <View style={[styles.statCard, { backgroundColor: colors.primary }]}>
+                <IconSymbol name="newspaper" size={32} color={colors.white} />
+                <Text style={styles.statValue}>{news.length}</Text>
+                <Text style={styles.statLabel}>Actualités</Text>
+              </View>
+              <View style={[styles.statCard, { backgroundColor: colors.accent }]}>
+                <IconSymbol name="calendar" size={32} color={colors.white} />
+                <Text style={styles.statValue}>{events.length}</Text>
+                <Text style={styles.statLabel}>Événements</Text>
+              </View>
+              <View style={[styles.statCard, { backgroundColor: colors.highlight }]}>
+                <IconSymbol name="photo.fill" size={32} color={colors.white} />
+                <Text style={styles.statValue}>{media.length}</Text>
+                <Text style={styles.statLabel}>Médias</Text>
+              </View>
+              <View style={[styles.statCard, { backgroundColor: colors.secondary }]}>
+                <IconSymbol name="map.fill" size={32} color={colors.black} />
+                <Text style={[styles.statValue, { color: colors.black }]}>{maliRegions.length}</Text>
+                <Text style={[styles.statLabel, { color: colors.black }]}>Régions</Text>
+              </View>
             </View>
           </View>
 
-          {/* Media Gallery */}
-          {media.length > 0 && (
-            <View style={commonStyles.section}>
-              <View style={styles.sectionHeader}>
-                <Text style={[commonStyles.subtitle, { color: colors.primary }]}>
-                  Galerie Photos & Vidéos
-                </Text>
-                <Pressable onPress={() => router.push('/media-gallery')}>
-                  <Text style={styles.seeAllText}>Voir tout</Text>
-                </Pressable>
-              </View>
-              <View style={styles.mediaGrid}>
-                {recentMedia.map((item) => (
-                  <Pressable
-                    key={item.id}
-                    style={styles.mediaItem}
-                    onPress={() => router.push(`/media-gallery?id=${item.id}`)}
-                  >
-                    {item.type === 'image' ? (
-                      <Image
-                        source={{ uri: item.url }}
-                        style={styles.mediaImage}
-                        resizeMode="cover"
-                      />
-                    ) : (
-                      <View style={styles.videoThumbnail}>
-                        <Image
-                          source={{ uri: item.url }}
-                          style={styles.mediaImage}
-                          resizeMode="cover"
-                        />
-                        <View style={styles.playIconOverlay}>
-                          <IconSymbol name="play.circle.fill" size={48} color={colors.white} />
-                        </View>
-                      </View>
-                    )}
-                    <View style={styles.mediaInfo}>
-                      <Text style={styles.mediaTitle} numberOfLines={1}>
-                        {item.title}
-                      </Text>
-                      <Text style={styles.mediaDate}>{item.date}</Text>
-                    </View>
-                  </Pressable>
-                ))}
-              </View>
-              <Text style={styles.mediaCount}>
-                {media.length} {media.length === 1 ? 'média disponible' : 'médias disponibles'}
-              </Text>
-            </View>
-          )}
-
-          {/* Recent News */}
+          {/* Latest News */}
           <View style={commonStyles.section}>
             <View style={styles.sectionHeader}>
               <Text style={[commonStyles.subtitle, { color: colors.primary }]}>
-                Actualités Récentes
+                Dernières actualités
               </Text>
               <Pressable onPress={() => router.push('/news')}>
                 <Text style={styles.seeAllText}>Voir tout</Text>
               </Pressable>
             </View>
-            {recentNews.map((item) => (
+            {news.slice(0, 3).map((item) => (
               <View key={item.id} style={styles.newsCard}>
-                <View style={styles.newsHeader}>
+                {item.image && (
+                  <Image
+                    source={{ uri: item.image }}
+                    style={styles.newsImage}
+                    resizeMode="cover"
+                  />
+                )}
+                <View style={styles.newsContent}>
                   <View style={[styles.categoryBadge, { backgroundColor: colors.primary }]}>
                     <Text style={styles.categoryText}>{item.category}</Text>
                   </View>
-                  <Text style={styles.dateText}>{item.date}</Text>
+                  <Text style={styles.newsTitle} numberOfLines={2}>
+                    {item.title}
+                  </Text>
+                  <Text style={styles.newsDate}>{item.date}</Text>
                 </View>
-                <Text style={styles.newsTitle}>{item.title}</Text>
-                <Text style={styles.newsContent} numberOfLines={2}>
-                  {item.content}
-                </Text>
               </View>
             ))}
           </View>
@@ -151,69 +137,100 @@ export default function PublicDashboardScreen() {
           <View style={commonStyles.section}>
             <View style={styles.sectionHeader}>
               <Text style={[commonStyles.subtitle, { color: colors.primary }]}>
-                Événements à Venir
+                Événements à venir
               </Text>
               <Pressable onPress={() => router.push('/events')}>
                 <Text style={styles.seeAllText}>Voir tout</Text>
               </Pressable>
             </View>
-            {upcomingEvents.map((item) => (
+            {events.slice(0, 3).map((item) => (
               <View key={item.id} style={styles.eventCard}>
-                <View style={styles.eventIcon}>
-                  <IconSymbol name="calendar" size={24} color={colors.accent} />
+                <View style={[styles.eventIcon, { backgroundColor: colors.accent }]}>
+                  <IconSymbol name="calendar" size={24} color={colors.white} />
                 </View>
                 <View style={styles.eventContent}>
                   <Text style={styles.eventTitle}>{item.title}</Text>
-                  <Text style={styles.eventLocation}>
-                    <IconSymbol name="location.fill" size={14} color={colors.textSecondary} />
+                  <Text style={styles.eventDate}>{item.date}</Text>
+                  <Text style={styles.eventLocation} numberOfLines={1}>
+                    <IconSymbol name="location.fill" size={12} color={colors.textSecondary} />
                     {' '}{item.location}
                   </Text>
-                  <Text style={styles.eventDate}>{item.date}</Text>
                 </View>
               </View>
             ))}
           </View>
 
-          {/* Regions Overview */}
+          {/* Media Gallery Preview */}
           <View style={commonStyles.section}>
             <View style={styles.sectionHeader}>
               <Text style={[commonStyles.subtitle, { color: colors.primary }]}>
-                Régions du Mali
+                Galerie média
               </Text>
-              <Pressable onPress={() => router.push('/regions')}>
+              <Pressable onPress={() => router.push('/media-gallery')}>
                 <Text style={styles.seeAllText}>Voir tout</Text>
               </Pressable>
             </View>
-            <View style={styles.regionsGrid}>
-              {maliRegions.slice(0, 6).map((region) => (
-                <View key={region.id} style={styles.regionCard}>
-                  <IconSymbol name="map.fill" size={24} color={colors.primary} />
-                  <Text style={styles.regionName}>{region.name}</Text>
-                  <Text style={styles.regionCapital}>{region.capital}</Text>
-                </View>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.mediaScroll}
+            >
+              {media.slice(0, 5).map((item) => (
+                <Pressable
+                  key={item.id}
+                  style={styles.mediaPreview}
+                  onPress={() => router.push('/media-gallery')}
+                >
+                  <Image
+                    source={{ uri: item.url }}
+                    style={styles.mediaPreviewImage}
+                    resizeMode="cover"
+                  />
+                  {item.type === 'video' && (
+                    <View style={styles.videoOverlay}>
+                      <IconSymbol name="play.circle.fill" size={32} color={colors.white} />
+                    </View>
+                  )}
+                </Pressable>
               ))}
-            </View>
+            </ScrollView>
           </View>
 
           {/* Quick Actions */}
           <View style={commonStyles.section}>
             <Text style={[commonStyles.subtitle, { color: colors.primary }]}>
-              Actions Rapides
+              Actions rapides
             </Text>
-            <Pressable
-              style={styles.quickActionButton}
-              onPress={() => router.push('/membership')}
-            >
-              <IconSymbol name="person.badge.plus" size={24} color={colors.white} />
-              <Text style={styles.quickActionText}>Adhérer au Parti</Text>
-            </Pressable>
-            <Pressable
-              style={[styles.quickActionButton, { backgroundColor: colors.accent }]}
-              onPress={() => router.push('/contact')}
-            >
-              <IconSymbol name="envelope.fill" size={24} color={colors.white} />
-              <Text style={styles.quickActionText}>Nous Contacter</Text>
-            </Pressable>
+            <View style={styles.actionsGrid}>
+              <Pressable
+                style={styles.actionCard}
+                onPress={() => router.push('/membership')}
+              >
+                <IconSymbol name="person.badge.plus" size={32} color={colors.primary} />
+                <Text style={styles.actionText}>Adhérer</Text>
+              </Pressable>
+              <Pressable
+                style={styles.actionCard}
+                onPress={() => router.push('/donations')}
+              >
+                <IconSymbol name="heart.fill" size={32} color={colors.error} />
+                <Text style={styles.actionText}>Faire un don</Text>
+              </Pressable>
+              <Pressable
+                style={styles.actionCard}
+                onPress={() => router.push('/chat')}
+              >
+                <IconSymbol name="bubble.left.and.bubble.right.fill" size={32} color={colors.accent} />
+                <Text style={styles.actionText}>Chat</Text>
+              </Pressable>
+              <Pressable
+                style={styles.actionCard}
+                onPress={() => router.push('/contact')}
+              >
+                <IconSymbol name="envelope.fill" size={32} color={colors.highlight} />
+                <Text style={styles.actionText}>Contact</Text>
+              </Pressable>
+            </View>
           </View>
         </ScrollView>
       </SafeAreaView>
@@ -228,153 +245,95 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: 40,
   },
-  heroSection: {
-    backgroundColor: colors.primary,
-    padding: 24,
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
   },
-  heroTitle: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: colors.white,
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  heroSubtitle: {
-    fontSize: 16,
-    color: colors.white,
-    textAlign: 'center',
+  header: {
+    alignItems: 'center',
+    paddingVertical: 24,
+    paddingHorizontal: 20,
   },
   statsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    padding: 20,
     gap: 12,
+    marginTop: 12,
   },
-  statBox: {
-    width: (width - 52) / 2,
-    padding: 20,
+  statCard: {
+    flex: 1,
+    minWidth: '47%',
     borderRadius: 12,
+    padding: 16,
     alignItems: 'center',
   },
   statValue: {
     fontSize: 32,
-    fontWeight: '800',
+    fontWeight: '900',
     color: colors.white,
     marginTop: 8,
   },
   statLabel: {
-    fontSize: 12,
+    fontSize: 14,
+    fontWeight: '600',
     color: colors.white,
     marginTop: 4,
-    textAlign: 'center',
   },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 12,
   },
   seeAllText: {
     fontSize: 14,
+    fontWeight: '600',
     color: colors.accent,
-    fontWeight: '600',
-  },
-  mediaGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-    marginBottom: 12,
-  },
-  mediaItem: {
-    width: (width - 56) / 2,
-    backgroundColor: colors.white,
-    borderRadius: 12,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  mediaImage: {
-    width: '100%',
-    height: 120,
-    backgroundColor: colors.card,
-  },
-  videoThumbnail: {
-    position: 'relative',
-  },
-  playIconOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
-  },
-  mediaInfo: {
-    padding: 8,
-  },
-  mediaTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.text,
-    marginBottom: 4,
-  },
-  mediaDate: {
-    fontSize: 12,
-    color: colors.textSecondary,
-  },
-  mediaCount: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    fontStyle: 'italic',
-    textAlign: 'center',
   },
   newsCard: {
     backgroundColor: colors.white,
     borderRadius: 12,
-    padding: 16,
     marginBottom: 12,
+    overflow: 'hidden',
     borderWidth: 1,
     borderColor: colors.border,
   },
-  newsHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
+  newsImage: {
+    width: '100%',
+    height: 150,
+    backgroundColor: colors.card,
+  },
+  newsContent: {
+    padding: 12,
   },
   categoryBadge: {
+    alignSelf: 'flex-start',
     paddingVertical: 4,
     paddingHorizontal: 12,
     borderRadius: 12,
+    marginBottom: 8,
   },
   categoryText: {
     fontSize: 12,
     fontWeight: '600',
     color: colors.white,
   },
-  dateText: {
-    fontSize: 12,
-    color: colors.textSecondary,
-  },
   newsTitle: {
     fontSize: 16,
     fontWeight: '700',
     color: colors.text,
-    marginBottom: 8,
+    marginBottom: 4,
   },
-  newsContent: {
-    fontSize: 14,
+  newsDate: {
+    fontSize: 12,
     color: colors.textSecondary,
-    lineHeight: 20,
   },
   eventCard: {
     flexDirection: 'row',
     backgroundColor: colors.white,
     borderRadius: 12,
-    padding: 16,
+    padding: 12,
     marginBottom: 12,
     borderWidth: 1,
     borderColor: colors.border,
@@ -383,7 +342,6 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: colors.card,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -397,55 +355,63 @@ const styles = StyleSheet.create({
     color: colors.text,
     marginBottom: 4,
   },
-  eventLocation: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    marginBottom: 4,
-  },
   eventDate: {
-    fontSize: 12,
+    fontSize: 14,
     color: colors.accent,
     fontWeight: '600',
+    marginBottom: 2,
   },
-  regionsGrid: {
+  eventLocation: {
+    fontSize: 12,
+    color: colors.textSecondary,
+  },
+  mediaScroll: {
+    paddingRight: 20,
+  },
+  mediaPreview: {
+    width: 120,
+    height: 120,
+    borderRadius: 12,
+    overflow: 'hidden',
+    marginRight: 12,
+    position: 'relative',
+  },
+  mediaPreviewImage: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: colors.card,
+  },
+  videoOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+  },
+  actionsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 12,
+    marginTop: 12,
   },
-  regionCard: {
-    width: (width - 52) / 2,
+  actionCard: {
+    flex: 1,
+    minWidth: '47%',
     backgroundColor: colors.white,
     borderRadius: 12,
-    padding: 16,
+    padding: 20,
     alignItems: 'center',
     borderWidth: 1,
     borderColor: colors.border,
   },
-  regionName: {
+  actionText: {
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: '600',
     color: colors.text,
     marginTop: 8,
     textAlign: 'center',
-  },
-  regionCapital: {
-    fontSize: 12,
-    color: colors.textSecondary,
-    marginTop: 2,
-  },
-  quickActionButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.primary,
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 12,
-    gap: 12,
-  },
-  quickActionText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.white,
   },
 });

@@ -10,6 +10,7 @@ import {
   Image,
   Modal,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -22,10 +23,12 @@ import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 const { width, height } = Dimensions.get('window');
 
 export default function MediaGalleryScreen() {
-  const { media } = useContent();
+  const { media, isLoading } = useContent();
   const params = useLocalSearchParams();
   const [selectedMedia, setSelectedMedia] = useState<MediaItem | null>(null);
   const [filter, setFilter] = useState<'all' | 'image' | 'video'>('all');
+  const [videoLoading, setVideoLoading] = useState(false);
+  const [videoError, setVideoError] = useState(false);
   const videoRef = useRef<Video>(null);
 
   const filteredMedia = filter === 'all' 
@@ -34,16 +37,54 @@ export default function MediaGalleryScreen() {
 
   const openMedia = (item: MediaItem) => {
     console.log('Opening media:', item.title);
+    setVideoError(false);
+    setVideoLoading(item.type === 'video');
     setSelectedMedia(item);
   };
 
   const closeMedia = () => {
     console.log('Closing media viewer');
     if (videoRef.current) {
-      videoRef.current.pauseAsync();
+      videoRef.current.pauseAsync().catch(err => console.log('Error pausing video:', err));
     }
     setSelectedMedia(null);
+    setVideoError(false);
+    setVideoLoading(false);
   };
+
+  const handleVideoLoad = () => {
+    console.log('Video loaded successfully');
+    setVideoLoading(false);
+    setVideoError(false);
+  };
+
+  const handleVideoError = (error: string) => {
+    console.error('Video error:', error);
+    setVideoLoading(false);
+    setVideoError(true);
+  };
+
+  if (isLoading) {
+    return (
+      <>
+        <Stack.Screen
+          options={{
+            title: 'Galerie Média',
+            headerStyle: {
+              backgroundColor: colors.primary,
+            },
+            headerTintColor: colors.white,
+          }}
+        />
+        <SafeAreaView style={[commonStyles.container, { backgroundColor: colors.background }]}>
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={colors.primary} />
+            <Text style={[commonStyles.text, { marginTop: 16 }]}>Chargement...</Text>
+          </View>
+        </SafeAreaView>
+      </>
+    );
+  }
 
   return (
     <>
@@ -193,19 +234,41 @@ export default function MediaGalleryScreen() {
                       resizeMode="contain"
                     />
                   ) : (
-                    <Video
-                      ref={videoRef}
-                      source={{ uri: selectedMedia.url }}
-                      style={styles.fullVideo}
-                      useNativeControls
-                      resizeMode={ResizeMode.CONTAIN}
-                      shouldPlay={false}
-                      onPlaybackStatusUpdate={(status: AVPlaybackStatus) => {
-                        if (status.isLoaded) {
-                          console.log('Video playback status:', status);
-                        }
-                      }}
-                    />
+                    <View style={styles.videoContainer}>
+                      {videoLoading && (
+                        <View style={styles.videoLoadingOverlay}>
+                          <ActivityIndicator size="large" color={colors.white} />
+                          <Text style={styles.videoLoadingText}>Chargement de la vidéo...</Text>
+                        </View>
+                      )}
+                      {videoError ? (
+                        <View style={styles.videoErrorContainer}>
+                          <IconSymbol name="exclamationmark.triangle.fill" size={48} color={colors.error} />
+                          <Text style={styles.videoErrorText}>
+                            Erreur de chargement de la vidéo
+                          </Text>
+                          <Text style={styles.videoErrorSubtext}>
+                            Vérifiez votre connexion internet
+                          </Text>
+                        </View>
+                      ) : (
+                        <Video
+                          ref={videoRef}
+                          source={{ uri: selectedMedia.url }}
+                          style={styles.fullVideo}
+                          useNativeControls
+                          resizeMode={ResizeMode.CONTAIN}
+                          shouldPlay={false}
+                          onLoad={handleVideoLoad}
+                          onError={(error) => handleVideoError(error)}
+                          onPlaybackStatusUpdate={(status: AVPlaybackStatus) => {
+                            if (status.isLoaded) {
+                              console.log('Video playback status:', status.isPlaying ? 'playing' : 'paused');
+                            }
+                          }}
+                        />
+                      )}
+                    </View>
                   )}
                 </View>
 
@@ -224,6 +287,11 @@ export default function MediaGalleryScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   filterContainer: {
     flexDirection: 'row',
@@ -383,9 +451,50 @@ const styles = StyleSheet.create({
     width: width,
     height: height * 0.7,
   },
+  videoContainer: {
+    width: width,
+    height: height * 0.7,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   fullVideo: {
     width: width,
     height: height * 0.7,
+  },
+  videoLoadingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    zIndex: 10,
+  },
+  videoLoadingText: {
+    color: colors.white,
+    fontSize: 16,
+    marginTop: 16,
+  },
+  videoErrorContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 40,
+  },
+  videoErrorText: {
+    color: colors.white,
+    fontSize: 18,
+    fontWeight: '600',
+    marginTop: 16,
+    textAlign: 'center',
+  },
+  videoErrorSubtext: {
+    color: colors.white,
+    fontSize: 14,
+    marginTop: 8,
+    opacity: 0.7,
+    textAlign: 'center',
   },
   modalFooter: {
     padding: 20,

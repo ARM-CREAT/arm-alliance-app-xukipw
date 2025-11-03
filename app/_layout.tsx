@@ -46,8 +46,8 @@ export default function RootLayout() {
       networkState.isInternetReachable === false
     ) {
       Alert.alert(
-        "🔌 You are offline",
-        "You can keep using the app! Your changes will be saved locally and synced when you are back online."
+        "🔌 Vous êtes hors ligne",
+        "Vous pouvez continuer à utiliser l'application! Vos modifications seront sauvegardées localement et synchronisées lorsque vous serez de nouveau en ligne."
       );
     }
   }, [networkState.isConnected, networkState.isInternetReachable]);
@@ -149,8 +149,14 @@ export default function RootLayout() {
                       headerShown: false,
                     }}
                   />
+                  <Stack.Screen
+                    name="analytics"
+                    options={{
+                      headerShown: false,
+                    }}
+                  />
 
-                  {/* Other screens */}
+                  {/* Public screens */}
                   <Stack.Screen
                     name="membership"
                     options={{
@@ -171,6 +177,36 @@ export default function RootLayout() {
                   />
                   <Stack.Screen
                     name="news"
+                    options={{
+                      headerShown: false,
+                    }}
+                  />
+                  <Stack.Screen
+                    name="chat"
+                    options={{
+                      headerShown: false,
+                    }}
+                  />
+                  <Stack.Screen
+                    name="donations"
+                    options={{
+                      headerShown: false,
+                    }}
+                  />
+                  <Stack.Screen
+                    name="media-gallery"
+                    options={{
+                      headerShown: false,
+                    }}
+                  />
+                  <Stack.Screen
+                    name="share"
+                    options={{
+                      headerShown: false,
+                    }}
+                  />
+                  <Stack.Screen
+                    name="install-pwa"
                     options={{
                       headerShown: false,
                     }}

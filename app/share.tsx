@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -16,23 +16,19 @@ import { Stack, router } from 'expo-router';
 import { colors, commonStyles, buttonStyles } from '@/styles/commonStyles';
 
 export default function ShareScreen() {
-  const shareMessage = 'Rejoignez A.R.M - Alliance pour le Rassemblement Malien. Ensemble, construisons un Mali meilleur! 🇲🇱';
-  const shareUrl = 'https://arm-mali.org'; // Remplacez par votre URL réelle
+  const [shareCount, setShareCount] = useState(0);
 
-  const handleShare = async (platform?: string) => {
+  const shareApp = async () => {
     try {
       const result = await Share.share({
-        message: `${shareMessage}\n\n${shareUrl}`,
+        message: 'Rejoignez A.R.M - Alliance pour le Rassemblement Malien\n\nEnsemble, construisons un Mali meilleur!\n\nFraternité • Liberté • Égalité\n\nTéléchargez l\'application maintenant!',
         title: 'A.R.M - Alliance pour le Rassemblement Malien',
       });
 
       if (result.action === Share.sharedAction) {
-        if (result.activityType) {
-          console.log('Shared with activity type:', result.activityType);
-        } else {
-          console.log('Shared successfully');
-        }
-        Alert.alert('Succès', 'Merci d\'avoir partagé A.R.M!');
+        setShareCount(shareCount + 1);
+        Alert.alert('Merci!', 'Merci d\'avoir partagé A.R.M avec vos contacts!');
+        console.log('App shared successfully');
       }
     } catch (error) {
       console.error('Error sharing:', error);
@@ -40,32 +36,16 @@ export default function ShareScreen() {
     }
   };
 
-  const handleSocialShare = (platform: string) => {
-    let url = '';
-    const encodedMessage = encodeURIComponent(shareMessage);
-    const encodedUrl = encodeURIComponent(shareUrl);
-
-    switch (platform) {
-      case 'facebook':
-        url = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
-        break;
-      case 'twitter':
-        url = `https://twitter.com/intent/tweet?text=${encodedMessage}&url=${encodedUrl}`;
-        break;
-      case 'whatsapp':
-        url = `https://wa.me/?text=${encodedMessage}%20${encodedUrl}`;
-        break;
-      case 'linkedin':
-        url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`;
-        break;
-      default:
-        break;
-    }
-
-    if (url && Platform.OS === 'web') {
-      window.open(url, '_blank');
-    } else {
-      handleShare();
+  const shareOnSocialMedia = async (platform: string) => {
+    const message = 'Rejoignez A.R.M - Alliance pour le Rassemblement Malien. Ensemble, construisons un Mali meilleur! #ARM #Mali #Politique';
+    
+    try {
+      await Share.share({
+        message: message,
+      });
+      console.log(`Shared on ${platform}`);
+    } catch (error) {
+      console.error(`Error sharing on ${platform}:`, error);
     }
   };
 
@@ -88,109 +68,136 @@ export default function ShareScreen() {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.header}>
-            <IconSymbol name="square.and.arrow.up.fill" size={48} color={colors.primary} />
+            <IconSymbol name="square.and.arrow.up" size={48} color={colors.accent} />
             <Text style={[commonStyles.title, { color: colors.primary, marginTop: 16 }]}>
               Partagez A.R.M
             </Text>
             <Text style={[commonStyles.textSecondary, { textAlign: 'center' }]}>
-              Aidez-nous à faire connaître notre mouvement
+              Aidez-nous à faire connaître notre parti
             </Text>
           </View>
 
-          {/* Share Message Preview */}
-          <View style={commonStyles.section}>
-            <Text style={[commonStyles.subtitle, { color: colors.primary }]}>
-              Message à partager
-            </Text>
-            <View style={styles.messageCard}>
-              <Text style={styles.messageText}>{shareMessage}</Text>
-              <Text style={styles.urlText}>{shareUrl}</Text>
+          {/* Share Stats */}
+          {shareCount > 0 && (
+            <View style={commonStyles.section}>
+              <View style={styles.statsCard}>
+                <IconSymbol name="heart.fill" size={32} color={colors.error} />
+                <Text style={styles.statsText}>
+                  Vous avez partagé {shareCount} fois
+                </Text>
+                <Text style={styles.statsSubtext}>
+                  Merci pour votre soutien!
+                </Text>
+              </View>
             </View>
+          )}
+
+          {/* Main Share Button */}
+          <View style={commonStyles.section}>
+            <Pressable style={buttonStyles.primary} onPress={shareApp}>
+              <IconSymbol name="square.and.arrow.up" size={20} color={colors.white} />
+              <Text style={[buttonStyles.text, { marginLeft: 8 }]}>
+                Partager l&apos;application
+              </Text>
+            </Pressable>
           </View>
 
-          {/* Social Media Buttons */}
+          {/* Social Media Sharing */}
           <View style={commonStyles.section}>
             <Text style={[commonStyles.subtitle, { color: colors.primary }]}>
               Partager sur les réseaux sociaux
             </Text>
             <View style={styles.socialGrid}>
               <Pressable
-                style={[styles.socialButton, { backgroundColor: '#1877F2' }]}
-                onPress={() => handleSocialShare('facebook')}
+                style={[styles.socialCard, { backgroundColor: '#1877F2' }]}
+                onPress={() => shareOnSocialMedia('Facebook')}
               >
                 <IconSymbol name="f.square.fill" size={32} color={colors.white} />
                 <Text style={styles.socialText}>Facebook</Text>
               </Pressable>
 
               <Pressable
-                style={[styles.socialButton, { backgroundColor: '#1DA1F2' }]}
-                onPress={() => handleSocialShare('twitter')}
+                style={[styles.socialCard, { backgroundColor: '#1DA1F2' }]}
+                onPress={() => shareOnSocialMedia('Twitter')}
               >
-                <IconSymbol name="bird.fill" size={32} color={colors.white} />
+                <IconSymbol name="at" size={32} color={colors.white} />
                 <Text style={styles.socialText}>Twitter</Text>
               </Pressable>
 
               <Pressable
-                style={[styles.socialButton, { backgroundColor: '#25D366' }]}
-                onPress={() => handleSocialShare('whatsapp')}
+                style={[styles.socialCard, { backgroundColor: '#25D366' }]}
+                onPress={() => shareOnSocialMedia('WhatsApp')}
               >
                 <IconSymbol name="message.fill" size={32} color={colors.white} />
                 <Text style={styles.socialText}>WhatsApp</Text>
               </Pressable>
 
               <Pressable
-                style={[styles.socialButton, { backgroundColor: '#0A66C2' }]}
-                onPress={() => handleSocialShare('linkedin')}
+                style={[styles.socialCard, { backgroundColor: '#0088CC' }]}
+                onPress={() => shareOnSocialMedia('Telegram')}
               >
-                <IconSymbol name="link" size={32} color={colors.white} />
-                <Text style={styles.socialText}>LinkedIn</Text>
+                <IconSymbol name="paperplane.fill" size={32} color={colors.white} />
+                <Text style={styles.socialText}>Telegram</Text>
               </Pressable>
             </View>
           </View>
 
-          {/* Generic Share */}
+          {/* Share Message Preview */}
           <View style={commonStyles.section}>
-            <Pressable
-              style={[buttonStyles.primary, { flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }]}
-              onPress={() => handleShare()}
-            >
-              <IconSymbol name="square.and.arrow.up.fill" size={20} color={colors.white} />
-              <Text style={[buttonStyles.text, { marginLeft: 8 }]}>Partager</Text>
-            </Pressable>
-
-            <Pressable
-              style={[buttonStyles.outline, { marginTop: 12 }]}
-              onPress={() => router.back()}
-            >
-              <Text style={buttonStyles.textOutline}>Retour</Text>
-            </Pressable>
+            <Text style={[commonStyles.subtitle, { color: colors.primary }]}>
+              Message de partage
+            </Text>
+            <View style={styles.messagePreview}>
+              <Text style={styles.messageText}>
+                Rejoignez A.R.M - Alliance pour le Rassemblement Malien
+              </Text>
+              <Text style={styles.messageText}>
+                {'\n'}Ensemble, construisons un Mali meilleur!
+              </Text>
+              <Text style={styles.messageText}>
+                {'\n'}Fraternité • Liberté • Égalité
+              </Text>
+              <Text style={styles.messageText}>
+                {'\n'}Téléchargez l&apos;application maintenant!
+              </Text>
+            </View>
           </View>
 
-          {/* Why Share */}
+          {/* Why Share Section */}
           <View style={commonStyles.section}>
             <Text style={[commonStyles.subtitle, { color: colors.primary }]}>
               Pourquoi partager?
             </Text>
-            <View style={styles.benefitCard}>
+            <View style={styles.benefitsCard}>
               <View style={styles.benefitRow}>
                 <IconSymbol name="person.3.fill" size={24} color={colors.primary} />
                 <Text style={styles.benefitText}>
-                  Aidez-nous à toucher plus de Maliens
+                  Aidez plus de Maliens à découvrir notre vision
                 </Text>
               </View>
               <View style={styles.benefitRow}>
                 <IconSymbol name="megaphone.fill" size={24} color={colors.accent} />
                 <Text style={styles.benefitText}>
-                  Faites connaître notre programme politique
+                  Amplifiez notre message de changement
                 </Text>
               </View>
               <View style={styles.benefitRow}>
-                <IconSymbol name="heart.fill" size={24} color={colors.error} />
+                <IconSymbol name="hand.raised.fill" size={24} color={colors.highlight} />
                 <Text style={styles.benefitText}>
-                  Soutenez notre mouvement pour un Mali meilleur
+                  Contribuez à la construction d&apos;un Mali meilleur
                 </Text>
               </View>
             </View>
+          </View>
+
+          {/* Back Button */}
+          <View style={commonStyles.section}>
+            <Pressable
+              style={buttonStyles.outline}
+              onPress={() => router.back()}
+            >
+              <Text style={buttonStyles.textOutline}>Retour</Text>
+            </Pressable>
           </View>
         </ScrollView>
       </SafeAreaView>
@@ -210,7 +217,45 @@ const styles = StyleSheet.create({
     paddingVertical: 24,
     paddingHorizontal: 20,
   },
-  messageCard: {
+  statsCard: {
+    backgroundColor: colors.white,
+    borderRadius: 12,
+    padding: 24,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  statsText: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: colors.text,
+    marginTop: 12,
+  },
+  statsSubtext: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    marginTop: 4,
+  },
+  socialGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+    marginTop: 12,
+  },
+  socialCard: {
+    flex: 1,
+    minWidth: '47%',
+    borderRadius: 12,
+    padding: 20,
+    alignItems: 'center',
+  },
+  socialText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.white,
+    marginTop: 8,
+  },
+  messagePreview: {
     backgroundColor: colors.white,
     borderRadius: 12,
     padding: 16,
@@ -219,36 +264,11 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
   },
   messageText: {
-    fontSize: 15,
-    color: colors.text,
-    lineHeight: 22,
-    marginBottom: 12,
-  },
-  urlText: {
     fontSize: 14,
-    color: colors.primary,
-    fontWeight: '600',
+    color: colors.text,
+    lineHeight: 20,
   },
-  socialGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-    marginTop: 12,
-  },
-  socialButton: {
-    flex: 1,
-    minWidth: '47%',
-    borderRadius: 12,
-    padding: 20,
-    alignItems: 'center',
-  },
-  socialText: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: colors.white,
-    marginTop: 8,
-  },
-  benefitCard: {
+  benefitsCard: {
     backgroundColor: colors.white,
     borderRadius: 12,
     padding: 16,
@@ -262,10 +282,10 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   benefitText: {
-    fontSize: 15,
+    flex: 1,
+    fontSize: 14,
     color: colors.text,
     marginLeft: 12,
-    flex: 1,
     lineHeight: 20,
   },
 });

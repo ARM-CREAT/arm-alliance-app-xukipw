@@ -42,6 +42,7 @@ interface ContentContextType {
   addMedia: (item: Omit<MediaItem, 'id'>) => Promise<void>;
   deleteMedia: (id: string) => Promise<void>;
   refreshContent: () => Promise<void>;
+  isLoading: boolean;
 }
 
 const ContentContext = createContext<ContentContextType | undefined>(undefined);
@@ -50,22 +51,33 @@ const STORAGE_KEYS = {
   NEWS: 'arm_news',
   EVENTS: 'arm_events',
   MEDIA: 'arm_media',
+  INITIALIZED: 'arm_content_initialized',
 };
 
 const defaultNews: NewsItem[] = [
   {
     id: '1',
     title: 'Lancement officiel de l\'A.R.M',
-    content: 'L\'Alliance pour le Rassemblement Malien a été officiellement lancée à Bamako.',
+    content: 'L\'Alliance pour le Rassemblement Malien a été officiellement lancée à Bamako. Cette nouvelle formation politique vise à rassembler tous les Maliens autour des valeurs de fraternité, liberté et égalité.',
     category: 'Politique',
     date: '2024-01-15',
+    image: 'https://images.unsplash.com/photo-1540910419892-4a36d2c3266c?w=800',
   },
   {
     id: '2',
     title: 'Programme de développement économique',
-    content: 'Présentation de notre plan pour la création d\'emplois et le développement économique.',
+    content: 'Présentation de notre plan ambitieux pour la création d\'emplois et le développement économique du Mali. Notre programme se concentre sur l\'agriculture, l\'entrepreneuriat et l\'innovation.',
     category: 'Économie',
     date: '2024-01-20',
+    image: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800',
+  },
+  {
+    id: '3',
+    title: 'Rencontre avec les jeunes',
+    content: 'Notre vice-président a rencontré les jeunes de plusieurs régions pour discuter de l\'avenir de l\'éducation et de l\'emploi au Mali.',
+    category: 'Jeunesse',
+    date: '2024-01-25',
+    image: 'https://images.unsplash.com/photo-1523580494863-6f3031224c94?w=800',
   },
 ];
 
@@ -73,7 +85,7 @@ const defaultEvents: EventItem[] = [
   {
     id: '1',
     title: 'Assemblée Générale',
-    description: 'Première assemblée générale du parti',
+    description: 'Première assemblée générale du parti pour définir les orientations stratégiques',
     date: '2024-02-15',
     location: 'Bamako, Sebenikoro',
     type: 'meeting',
@@ -81,21 +93,82 @@ const defaultEvents: EventItem[] = [
   {
     id: '2',
     title: 'Campagne de sensibilisation',
-    description: 'Campagne de sensibilisation dans la région de Koulikoro',
+    description: 'Campagne de sensibilisation dans la région de Koulikoro sur nos programmes',
     date: '2024-02-20',
     location: 'Koulikoro',
     type: 'campaign',
   },
+  {
+    id: '3',
+    title: 'Forum sur l\'éducation',
+    description: 'Discussion sur l\'amélioration du système éducatif malien avec les acteurs du secteur',
+    date: '2024-03-05',
+    location: 'Centre culturel, Bamako',
+    type: 'forum',
+  },
+];
+
+const defaultMedia: MediaItem[] = [
+  {
+    id: '1',
+    title: 'Cérémonie de lancement',
+    type: 'image',
+    url: 'https://images.unsplash.com/photo-1540910419892-4a36d2c3266c?w=800',
+    description: 'Photos de la cérémonie de lancement officiel du parti A.R.M',
+    date: '2024-01-15',
+  },
+  {
+    id: '2',
+    title: 'Rencontre avec les membres',
+    type: 'image',
+    url: 'https://images.unsplash.com/photo-1523580494863-6f3031224c94?w=800',
+    description: 'Moments forts de notre rencontre avec les membres du parti',
+    date: '2024-01-20',
+  },
 ];
 
 export function ContentProvider({ children }: { children: React.ReactNode }) {
-  const [news, setNews] = useState<NewsItem[]>(defaultNews);
-  const [events, setEvents] = useState<EventItem[]>(defaultEvents);
+  const [news, setNews] = useState<NewsItem[]>([]);
+  const [events, setEvents] = useState<EventItem[]>([]);
   const [media, setMedia] = useState<MediaItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    loadContent();
+    initializeContent();
   }, []);
+
+  const initializeContent = async () => {
+    try {
+      console.log('Initializing content...');
+      const initialized = await AsyncStorage.getItem(STORAGE_KEYS.INITIALIZED);
+      
+      if (!initialized) {
+        console.log('First time initialization - setting default content');
+        // First time initialization
+        await Promise.all([
+          AsyncStorage.setItem(STORAGE_KEYS.NEWS, JSON.stringify(defaultNews)),
+          AsyncStorage.setItem(STORAGE_KEYS.EVENTS, JSON.stringify(defaultEvents)),
+          AsyncStorage.setItem(STORAGE_KEYS.MEDIA, JSON.stringify(defaultMedia)),
+          AsyncStorage.setItem(STORAGE_KEYS.INITIALIZED, 'true'),
+        ]);
+        setNews(defaultNews);
+        setEvents(defaultEvents);
+        setMedia(defaultMedia);
+      } else {
+        console.log('Loading existing content');
+        await loadContent();
+      }
+    } catch (error) {
+      console.error('Error initializing content:', error);
+      // Fallback to default content
+      setNews(defaultNews);
+      setEvents(defaultEvents);
+      setMedia(defaultMedia);
+    } finally {
+      setIsLoading(false);
+      console.log('Content initialization complete');
+    }
+  };
 
   const loadContent = async () => {
     try {
@@ -105,11 +178,32 @@ export function ContentProvider({ children }: { children: React.ReactNode }) {
         AsyncStorage.getItem(STORAGE_KEYS.MEDIA),
       ]);
 
-      if (storedNews) setNews(JSON.parse(storedNews));
-      if (storedEvents) setEvents(JSON.parse(storedEvents));
-      if (storedMedia) setMedia(JSON.parse(storedMedia));
+      if (storedNews) {
+        const parsedNews = JSON.parse(storedNews);
+        setNews(parsedNews.length > 0 ? parsedNews : defaultNews);
+      } else {
+        setNews(defaultNews);
+      }
+      
+      if (storedEvents) {
+        const parsedEvents = JSON.parse(storedEvents);
+        setEvents(parsedEvents.length > 0 ? parsedEvents : defaultEvents);
+      } else {
+        setEvents(defaultEvents);
+      }
+      
+      if (storedMedia) {
+        const parsedMedia = JSON.parse(storedMedia);
+        setMedia(parsedMedia.length > 0 ? parsedMedia : defaultMedia);
+      } else {
+        setMedia(defaultMedia);
+      }
     } catch (error) {
-      console.log('Error loading content:', error);
+      console.error('Error loading content:', error);
+      // Fallback to default content
+      setNews(defaultNews);
+      setEvents(defaultEvents);
+      setMedia(defaultMedia);
     }
   };
 
@@ -117,8 +211,9 @@ export function ContentProvider({ children }: { children: React.ReactNode }) {
     try {
       await AsyncStorage.setItem(STORAGE_KEYS.NEWS, JSON.stringify(newNews));
       setNews(newNews);
+      console.log('News saved successfully');
     } catch (error) {
-      console.log('Error saving news:', error);
+      console.error('Error saving news:', error);
     }
   };
 
@@ -126,8 +221,9 @@ export function ContentProvider({ children }: { children: React.ReactNode }) {
     try {
       await AsyncStorage.setItem(STORAGE_KEYS.EVENTS, JSON.stringify(newEvents));
       setEvents(newEvents);
+      console.log('Events saved successfully');
     } catch (error) {
-      console.log('Error saving events:', error);
+      console.error('Error saving events:', error);
     }
   };
 
@@ -135,8 +231,9 @@ export function ContentProvider({ children }: { children: React.ReactNode }) {
     try {
       await AsyncStorage.setItem(STORAGE_KEYS.MEDIA, JSON.stringify(newMedia));
       setMedia(newMedia);
+      console.log('Media saved successfully');
     } catch (error) {
-      console.log('Error saving media:', error);
+      console.error('Error saving media:', error);
     }
   };
 
@@ -190,7 +287,11 @@ export function ContentProvider({ children }: { children: React.ReactNode }) {
   };
 
   const refreshContent = async () => {
+    console.log('Refreshing content...');
+    setIsLoading(true);
     await loadContent();
+    setIsLoading(false);
+    console.log('Content refreshed');
   };
 
   return (
@@ -208,6 +309,7 @@ export function ContentProvider({ children }: { children: React.ReactNode }) {
         addMedia,
         deleteMedia,
         refreshContent,
+        isLoading,
       }}
     >
       {children}
