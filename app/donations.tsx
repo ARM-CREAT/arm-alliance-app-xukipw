@@ -26,7 +26,7 @@ const paymentMethods: PaymentMethod[] = [
   { id: 'visa', name: 'Visa', icon: 'creditcard.fill', type: 'card' },
   { id: 'mastercard', name: 'Mastercard', icon: 'creditcard.fill', type: 'card' },
   { id: 'bank', name: 'Virement Bancaire', icon: 'building.columns.fill', type: 'bank' },
-  { id: 'mobile', name: 'Mobile Money', icon: 'phone.fill', type: 'mobile' },
+  { id: 'mobile', name: 'Orange Money', icon: 'phone.fill', type: 'mobile' },
 ];
 
 export default function DonationsScreen() {
@@ -257,23 +257,35 @@ export default function DonationsScreen() {
           {selectedPayment === 'bank' && (
             <View style={commonStyles.section}>
               <View style={styles.bankInfoCard}>
-                <Text style={[commonStyles.subtitle, { color: colors.primary }]}>
+                <IconSymbol name="building.columns.fill" size={40} color={colors.primary} style={{ alignSelf: 'center', marginBottom: 12 }} />
+                <Text style={[commonStyles.subtitle, { color: colors.primary, textAlign: 'center', marginBottom: 16 }]}>
                   Informations bancaires
                 </Text>
+                
                 <View style={styles.bankInfoRow}>
                   <Text style={styles.bankInfoLabel}>Banque:</Text>
                   <Text style={styles.bankInfoValue}>BMS (Banque Malienne de Solidarité)</Text>
                 </View>
+                
                 <View style={styles.bankInfoRow}>
                   <Text style={styles.bankInfoLabel}>Titulaire:</Text>
                   <Text style={styles.bankInfoValue}>A.R.M Alliance pour le Rassemblement Malien</Text>
                 </View>
+                
                 <View style={styles.bankInfoRow}>
                   <Text style={styles.bankInfoLabel}>Type:</Text>
                   <Text style={styles.bankInfoValue}>Compte Épargne</Text>
                 </View>
-                <Text style={[commonStyles.textSecondary, { marginTop: 12 }]}>
-                  Veuillez effectuer le virement et nous envoyer la preuve de paiement par email.
+                
+                <View style={[styles.bankInfoRow, { marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderTopColor: colors.border }]}>
+                  <Text style={styles.bankInfoLabel}>Numéro de compte:</Text>
+                  <Text style={[styles.bankInfoValue, { fontWeight: '700', color: colors.primary }]}>
+                    À fournir
+                  </Text>
+                </View>
+                
+                <Text style={[commonStyles.textSecondary, { marginTop: 16, fontSize: 13, lineHeight: 20 }]}>
+                  Veuillez effectuer le virement et nous envoyer la preuve de paiement par email à contact@arm-mali.org
                 </Text>
               </View>
             </View>
@@ -281,21 +293,40 @@ export default function DonationsScreen() {
 
           {selectedPayment === 'mobile' && (
             <View style={commonStyles.section}>
-              <Text style={[commonStyles.subtitle, { color: colors.primary }]}>
-                Mobile Money
-              </Text>
-              <Text style={commonStyles.label}>Numéro de téléphone</Text>
-              <TextInput
-                style={commonStyles.input}
-                placeholder="+223 XX XX XX XX"
-                value={phoneNumber}
-                onChangeText={setPhoneNumber}
-                keyboardType="phone-pad"
-                placeholderTextColor={colors.textSecondary}
-              />
-              <Text style={commonStyles.textSecondary}>
-                Vous recevrez une notification sur votre téléphone pour confirmer le paiement.
-              </Text>
+              <View style={styles.orangeMoneyCard}>
+                <IconSymbol name="phone.fill" size={40} color="#FF6600" style={{ alignSelf: 'center', marginBottom: 12 }} />
+                <Text style={[commonStyles.subtitle, { color: colors.primary, textAlign: 'center', marginBottom: 16 }]}>
+                  Orange Money
+                </Text>
+                
+                <View style={styles.orangeMoneyInfo}>
+                  <Text style={styles.orangeMoneyLabel}>Numéro Orange Money:</Text>
+                  <Text style={styles.orangeMoneyNumber}>0022377807756</Text>
+                </View>
+                
+                <View style={styles.instructionsBox}>
+                  <Text style={styles.instructionsTitle}>Instructions:</Text>
+                  <Text style={styles.instructionStep}>1. Composez #144# sur votre téléphone</Text>
+                  <Text style={styles.instructionStep}>2. Sélectionnez &quot;Transfert d&apos;argent&quot;</Text>
+                  <Text style={styles.instructionStep}>3. Entrez le numéro: 0022377807756</Text>
+                  <Text style={styles.instructionStep}>4. Entrez le montant de votre don</Text>
+                  <Text style={styles.instructionStep}>5. Confirmez la transaction</Text>
+                </View>
+                
+                <Text style={commonStyles.label}>Votre numéro de téléphone (optionnel)</Text>
+                <TextInput
+                  style={commonStyles.input}
+                  placeholder="+223 XX XX XX XX"
+                  value={phoneNumber}
+                  onChangeText={setPhoneNumber}
+                  keyboardType="phone-pad"
+                  placeholderTextColor={colors.textSecondary}
+                />
+                
+                <Text style={[commonStyles.textSecondary, { marginTop: 12, fontSize: 13 }]}>
+                  Après avoir effectué le transfert, veuillez nous contacter pour confirmer votre don.
+                </Text>
+              </View>
             </View>
           )}
 
@@ -408,9 +439,14 @@ const styles = StyleSheet.create({
   bankInfoCard: {
     backgroundColor: colors.white,
     borderRadius: 12,
-    padding: 16,
+    padding: 20,
     borderWidth: 1,
     borderColor: colors.border,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   bankInfoRow: {
     flexDirection: 'row',
@@ -420,12 +456,63 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: colors.text,
-    width: 100,
+    width: 120,
   },
   bankInfoValue: {
     fontSize: 14,
     color: colors.textSecondary,
     flex: 1,
+  },
+  orangeMoneyCard: {
+    backgroundColor: colors.white,
+    borderRadius: 12,
+    padding: 20,
+    borderWidth: 2,
+    borderColor: '#FF6600',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  orangeMoneyInfo: {
+    backgroundColor: '#FFF5E6',
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 16,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#FF6600',
+  },
+  orangeMoneyLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.text,
+    marginBottom: 8,
+  },
+  orangeMoneyNumber: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#FF6600',
+    letterSpacing: 1,
+  },
+  instructionsBox: {
+    backgroundColor: colors.background,
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 16,
+  },
+  instructionsTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: colors.primary,
+    marginBottom: 12,
+  },
+  instructionStep: {
+    fontSize: 14,
+    color: colors.text,
+    marginBottom: 8,
+    lineHeight: 20,
   },
   securityNotice: {
     flexDirection: 'row',
