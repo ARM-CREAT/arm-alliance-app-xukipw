@@ -97,6 +97,23 @@ export default function AdminDashboardScreen() {
             </View>
           </View>
 
+          {/* Quick Guide */}
+          <View style={commonStyles.section}>
+            <Pressable
+              style={styles.guideCard}
+              onPress={() => router.push('/admin-guide')}
+            >
+              <IconSymbol name="book.fill" size={32} color={colors.accent} />
+              <View style={styles.guideContent}>
+                <Text style={styles.guideTitle}>Guide de l&apos;Administrateur</Text>
+                <Text style={styles.guideText}>
+                  Comment se connecter et modifier le contenu
+                </Text>
+              </View>
+              <IconSymbol name="chevron.right" size={24} color={colors.textSecondary} />
+            </Pressable>
+          </View>
+
           {/* Management Actions */}
           <View style={commonStyles.section}>
             <Text style={[commonStyles.subtitle, { color: colors.primary }]}>
@@ -276,6 +293,29 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   actionDescription: {
+    fontSize: 14,
+    color: colors.textSecondary,
+  },
+  guideCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.card,
+    borderRadius: 12,
+    padding: 20,
+    borderWidth: 2,
+    borderColor: colors.accent,
+  },
+  guideContent: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  guideTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: colors.text,
+    marginBottom: 4,
+  },
+  guideText: {
     fontSize: 14,
     color: colors.textSecondary,
   },

@@ -160,6 +160,26 @@ export default function HomeScreen() {
                   <Text style={styles.actionDescription}>Nous contacter</Text>
                 </Pressable>
               </Link>
+
+              <Link href="/regions" asChild>
+                <Pressable style={styles.actionCard}>
+                  <View style={[styles.actionIcon, { backgroundColor: colors.primary }]}>
+                    <IconSymbol name="map.fill" size={28} color={colors.white} />
+                  </View>
+                  <Text style={styles.actionTitle}>Régions</Text>
+                  <Text style={styles.actionDescription}>Régions du Mali</Text>
+                </Pressable>
+              </Link>
+
+              <Link href="/admin-login" asChild>
+                <Pressable style={styles.actionCard}>
+                  <View style={[styles.actionIcon, { backgroundColor: colors.error }]}>
+                    <IconSymbol name="lock.shield.fill" size={28} color={colors.white} />
+                  </View>
+                  <Text style={styles.actionTitle}>Admin</Text>
+                  <Text style={styles.actionDescription}>Espace admin</Text>
+                </Pressable>
+              </Link>
             </View>
           </View>
 
