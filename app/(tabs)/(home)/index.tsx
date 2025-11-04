@@ -208,6 +208,16 @@ export default function HomeScreen() {
                 </Pressable>
               </Link>
 
+              <Link href="/test-password" asChild>
+                <Pressable style={styles.actionCard}>
+                  <View style={[styles.actionIcon, { backgroundColor: '#10b981' }]}>
+                    <IconSymbol name="checkmark.shield.fill" size={28} color={colors.white} />
+                  </View>
+                  <Text style={styles.actionTitle}>Test Admin</Text>
+                  <Text style={styles.actionDescription}>Tester le mot de passe</Text>
+                </Pressable>
+              </Link>
+
               <Link href="/admin-login" asChild>
                 <Pressable style={styles.actionCard}>
                   <View style={[styles.actionIcon, { backgroundColor: colors.error }]}>
