@@ -9,20 +9,60 @@ import {
   StyleSheet,
   Dimensions,
   Image,
-  ActivityIndicator,
+  RefreshControl,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { IconSymbol } from '@/components/IconSymbol';
-import React from 'react';
+import React, { useState, useCallback } from 'react';
 import { Stack, router } from 'expo-router';
 import { maliRegions } from '@/data/maliRegions';
+import { SkeletonLoader } from '@/components/SkeletonLoader';
+import { Toast } from '@/components/Toast';
+import { useToast } from '@/hooks/useToast';
+import Animated, { FadeInDown } from 'react-native-reanimated';
+import * as Haptics from 'expo-haptics';
 
 const { width } = Dimensions.get('window');
 
 export default function PublicDashboardScreen() {
-  const { news, events, media, isLoading } = useContent();
+  const { news, events, media, isLoading, refreshContent } = useContent();
+  const [refreshing, setRefreshing] = useState(false);
+  const { toast, showToast, hideToast } = useToast();
 
-  if (isLoading) {
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    }
+    
+    try {
+      await refreshContent();
+      showToast({
+        message: 'Tableau de bord mis à jour',
+        type: 'success',
+        duration: 2000,
+      });
+    } catch (error) {
+      console.log('Error refreshing:', error);
+      showToast({
+        message: 'Erreur lors de la mise à jour',
+        type: 'error',
+        duration: 2000,
+      });
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refreshContent]);
+
+  const handleCardPress = (route: string, title: string) => {
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    router.push(route as any);
+  };
+
+  if (isLoading && !refreshing) {
     return (
       <>
         <Stack.Screen
@@ -35,10 +75,20 @@ export default function PublicDashboardScreen() {
           }}
         />
         <SafeAreaView style={[commonStyles.container, { backgroundColor: colors.background }]}>
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color={colors.primary} />
-            <Text style={[commonStyles.text, { marginTop: 16 }]}>Chargement...</Text>
-          </View>
+          <ScrollView
+            style={styles.scrollView}
+            contentContainerStyle={styles.scrollContent}
+          >
+            <View style={styles.header}>
+              <IconSymbol name="chart.bar.fill" size={48} color={colors.accent} />
+              <Text style={[commonStyles.title, { color: colors.primary, marginTop: 16 }]}>
+                Tableau de bord
+              </Text>
+            </View>
+            <View style={commonStyles.section}>
+              <SkeletonLoader type="card" count={2} />
+            </View>
+          </ScrollView>
         </SafeAreaView>
       </>
     );
@@ -56,13 +106,30 @@ export default function PublicDashboardScreen() {
         }}
       />
       <SafeAreaView style={[commonStyles.container, { backgroundColor: colors.background }]} edges={['bottom']}>
+        {toast && (
+          <Toast
+            message={toast.message}
+            type={toast.type}
+            duration={toast.duration}
+            onHide={hideToast}
+          />
+        )}
+        
         <ScrollView
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor={colors.primary}
+              colors={[colors.primary]}
+            />
+          }
         >
           {/* Header */}
-          <View style={styles.header}>
+          <Animated.View entering={FadeInDown.delay(0).springify()} style={styles.header}>
             <IconSymbol name="chart.bar.fill" size={48} color={colors.accent} />
             <Text style={[commonStyles.title, { color: colors.primary, marginTop: 16 }]}>
               Tableau de bord
@@ -70,7 +137,7 @@ export default function PublicDashboardScreen() {
             <Text style={[commonStyles.textSecondary, { textAlign: 'center' }]}>
               Vue d&apos;ensemble des activités du parti
             </Text>
-          </View>
+          </Animated.View>
 
           {/* Quick Stats */}
           <View style={commonStyles.section}>
@@ -78,26 +145,49 @@ export default function PublicDashboardScreen() {
               Statistiques
             </Text>
             <View style={styles.statsGrid}>
-              <View style={[styles.statCard, { backgroundColor: colors.primary }]}>
-                <IconSymbol name="newspaper" size={32} color={colors.white} />
-                <Text style={styles.statValue}>{news.length}</Text>
-                <Text style={styles.statLabel}>Actualités</Text>
-              </View>
-              <View style={[styles.statCard, { backgroundColor: colors.accent }]}>
-                <IconSymbol name="calendar" size={32} color={colors.white} />
-                <Text style={styles.statValue}>{events.length}</Text>
-                <Text style={styles.statLabel}>Événements</Text>
-              </View>
-              <View style={[styles.statCard, { backgroundColor: colors.highlight }]}>
-                <IconSymbol name="photo.fill" size={32} color={colors.white} />
-                <Text style={styles.statValue}>{media.length}</Text>
-                <Text style={styles.statLabel}>Médias</Text>
-              </View>
-              <View style={[styles.statCard, { backgroundColor: colors.secondary }]}>
-                <IconSymbol name="map.fill" size={32} color={colors.black} />
-                <Text style={[styles.statValue, { color: colors.black }]}>{maliRegions.length}</Text>
-                <Text style={[styles.statLabel, { color: colors.black }]}>Régions</Text>
-              </View>
+              <Animated.View entering={FadeInDown.delay(100).springify()}>
+                <Pressable
+                  style={[styles.statCard, { backgroundColor: colors.primary }]}
+                  onPress={() => handleCardPress('/news', 'Actualités')}
+                >
+                  <IconSymbol name="newspaper" size={32} color={colors.white} />
+                  <Text style={styles.statValue}>{news.length}</Text>
+                  <Text style={styles.statLabel}>Actualités</Text>
+                </Pressable>
+              </Animated.View>
+              
+              <Animated.View entering={FadeInDown.delay(200).springify()}>
+                <Pressable
+                  style={[styles.statCard, { backgroundColor: colors.accent }]}
+                  onPress={() => handleCardPress('/events', 'Événements')}
+                >
+                  <IconSymbol name="calendar" size={32} color={colors.white} />
+                  <Text style={styles.statValue}>{events.length}</Text>
+                  <Text style={styles.statLabel}>Événements</Text>
+                </Pressable>
+              </Animated.View>
+              
+              <Animated.View entering={FadeInDown.delay(300).springify()}>
+                <Pressable
+                  style={[styles.statCard, { backgroundColor: colors.highlight }]}
+                  onPress={() => handleCardPress('/media-gallery', 'Médias')}
+                >
+                  <IconSymbol name="photo.fill" size={32} color={colors.white} />
+                  <Text style={styles.statValue}>{media.length}</Text>
+                  <Text style={styles.statLabel}>Médias</Text>
+                </Pressable>
+              </Animated.View>
+              
+              <Animated.View entering={FadeInDown.delay(400).springify()}>
+                <Pressable
+                  style={[styles.statCard, { backgroundColor: colors.secondary }]}
+                  onPress={() => handleCardPress('/regions', 'Régions')}
+                >
+                  <IconSymbol name="map.fill" size={32} color={colors.black} />
+                  <Text style={[styles.statValue, { color: colors.black }]}>{maliRegions.length}</Text>
+                  <Text style={[styles.statLabel, { color: colors.black }]}>Régions</Text>
+                </Pressable>
+              </Animated.View>
             </View>
           </View>
 
@@ -107,29 +197,37 @@ export default function PublicDashboardScreen() {
               <Text style={[commonStyles.subtitle, { color: colors.primary }]}>
                 Dernières actualités
               </Text>
-              <Pressable onPress={() => router.push('/news')}>
+              <Pressable onPress={() => handleCardPress('/news', 'Actualités')}>
                 <Text style={styles.seeAllText}>Voir tout</Text>
               </Pressable>
             </View>
-            {news.slice(0, 3).map((item) => (
-              <View key={item.id} style={styles.newsCard}>
-                {item.image && (
-                  <Image
-                    source={{ uri: item.image }}
-                    style={styles.newsImage}
-                    resizeMode="cover"
-                  />
-                )}
-                <View style={styles.newsContent}>
-                  <View style={[styles.categoryBadge, { backgroundColor: colors.primary }]}>
-                    <Text style={styles.categoryText}>{item.category}</Text>
+            {news.slice(0, 3).map((item, index) => (
+              <Animated.View
+                key={item.id}
+                entering={FadeInDown.delay(500 + index * 100).springify()}
+              >
+                <Pressable
+                  style={styles.newsCard}
+                  onPress={() => handleCardPress('/news', item.title)}
+                >
+                  {item.image && (
+                    <Image
+                      source={{ uri: item.image }}
+                      style={styles.newsImage}
+                      resizeMode="cover"
+                    />
+                  )}
+                  <View style={styles.newsContent}>
+                    <View style={[styles.categoryBadge, { backgroundColor: colors.primary }]}>
+                      <Text style={styles.categoryText}>{item.category}</Text>
+                    </View>
+                    <Text style={styles.newsTitle} numberOfLines={2}>
+                      {item.title}
+                    </Text>
+                    <Text style={styles.newsDate}>{item.date}</Text>
                   </View>
-                  <Text style={styles.newsTitle} numberOfLines={2}>
-                    {item.title}
-                  </Text>
-                  <Text style={styles.newsDate}>{item.date}</Text>
-                </View>
-              </View>
+                </Pressable>
+              </Animated.View>
             ))}
           </View>
 
@@ -139,24 +237,32 @@ export default function PublicDashboardScreen() {
               <Text style={[commonStyles.subtitle, { color: colors.primary }]}>
                 Événements à venir
               </Text>
-              <Pressable onPress={() => router.push('/events')}>
+              <Pressable onPress={() => handleCardPress('/events', 'Événements')}>
                 <Text style={styles.seeAllText}>Voir tout</Text>
               </Pressable>
             </View>
-            {events.slice(0, 3).map((item) => (
-              <View key={item.id} style={styles.eventCard}>
-                <View style={[styles.eventIcon, { backgroundColor: colors.accent }]}>
-                  <IconSymbol name="calendar" size={24} color={colors.white} />
-                </View>
-                <View style={styles.eventContent}>
-                  <Text style={styles.eventTitle}>{item.title}</Text>
-                  <Text style={styles.eventDate}>{item.date}</Text>
-                  <Text style={styles.eventLocation} numberOfLines={1}>
-                    <IconSymbol name="location.fill" size={12} color={colors.textSecondary} />
-                    {' '}{item.location}
-                  </Text>
-                </View>
-              </View>
+            {events.slice(0, 3).map((item, index) => (
+              <Animated.View
+                key={item.id}
+                entering={FadeInDown.delay(800 + index * 100).springify()}
+              >
+                <Pressable
+                  style={styles.eventCard}
+                  onPress={() => handleCardPress('/events', item.title)}
+                >
+                  <View style={[styles.eventIcon, { backgroundColor: colors.accent }]}>
+                    <IconSymbol name="calendar" size={24} color={colors.white} />
+                  </View>
+                  <View style={styles.eventContent}>
+                    <Text style={styles.eventTitle}>{item.title}</Text>
+                    <Text style={styles.eventDate}>{item.date}</Text>
+                    <Text style={styles.eventLocation} numberOfLines={1}>
+                      <IconSymbol name="location.fill" size={12} color={colors.textSecondary} />
+                      {' '}{item.location}
+                    </Text>
+                  </View>
+                </Pressable>
+              </Animated.View>
             ))}
           </View>
 
@@ -166,7 +272,7 @@ export default function PublicDashboardScreen() {
               <Text style={[commonStyles.subtitle, { color: colors.primary }]}>
                 Galerie média
               </Text>
-              <Pressable onPress={() => router.push('/media-gallery')}>
+              <Pressable onPress={() => handleCardPress('/media-gallery', 'Galerie')}>
                 <Text style={styles.seeAllText}>Voir tout</Text>
               </Pressable>
             </View>
@@ -175,23 +281,27 @@ export default function PublicDashboardScreen() {
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={styles.mediaScroll}
             >
-              {media.slice(0, 5).map((item) => (
-                <Pressable
+              {media.slice(0, 5).map((item, index) => (
+                <Animated.View
                   key={item.id}
-                  style={styles.mediaPreview}
-                  onPress={() => router.push('/media-gallery')}
+                  entering={FadeInDown.delay(1100 + index * 50).springify()}
                 >
-                  <Image
-                    source={{ uri: item.url }}
-                    style={styles.mediaPreviewImage}
-                    resizeMode="cover"
-                  />
-                  {item.type === 'video' && (
-                    <View style={styles.videoOverlay}>
-                      <IconSymbol name="play.circle.fill" size={32} color={colors.white} />
-                    </View>
-                  )}
-                </Pressable>
+                  <Pressable
+                    style={styles.mediaPreview}
+                    onPress={() => handleCardPress('/media-gallery', 'Média')}
+                  >
+                    <Image
+                      source={{ uri: item.url }}
+                      style={styles.mediaPreviewImage}
+                      resizeMode="cover"
+                    />
+                    {item.type === 'video' && (
+                      <View style={styles.videoOverlay}>
+                        <IconSymbol name="play.circle.fill" size={32} color={colors.white} />
+                      </View>
+                    )}
+                  </Pressable>
+                </Animated.View>
               ))}
             </ScrollView>
           </View>
@@ -202,34 +312,45 @@ export default function PublicDashboardScreen() {
               Actions rapides
             </Text>
             <View style={styles.actionsGrid}>
-              <Pressable
-                style={styles.actionCard}
-                onPress={() => router.push('/membership')}
-              >
-                <IconSymbol name="person.badge.plus" size={32} color={colors.primary} />
-                <Text style={styles.actionText}>Adhérer</Text>
-              </Pressable>
-              <Pressable
-                style={styles.actionCard}
-                onPress={() => router.push('/donations')}
-              >
-                <IconSymbol name="heart.fill" size={32} color={colors.error} />
-                <Text style={styles.actionText}>Faire un don</Text>
-              </Pressable>
-              <Pressable
-                style={styles.actionCard}
-                onPress={() => router.push('/chat')}
-              >
-                <IconSymbol name="bubble.left.and.bubble.right.fill" size={32} color={colors.accent} />
-                <Text style={styles.actionText}>Chat</Text>
-              </Pressable>
-              <Pressable
-                style={styles.actionCard}
-                onPress={() => router.push('/contact')}
-              >
-                <IconSymbol name="envelope.fill" size={32} color={colors.highlight} />
-                <Text style={styles.actionText}>Contact</Text>
-              </Pressable>
+              <Animated.View entering={FadeInDown.delay(1300).springify()}>
+                <Pressable
+                  style={styles.actionCard}
+                  onPress={() => handleCardPress('/membership', 'Adhérer')}
+                >
+                  <IconSymbol name="person.badge.plus" size={32} color={colors.primary} />
+                  <Text style={styles.actionText}>Adhérer</Text>
+                </Pressable>
+              </Animated.View>
+              
+              <Animated.View entering={FadeInDown.delay(1400).springify()}>
+                <Pressable
+                  style={styles.actionCard}
+                  onPress={() => handleCardPress('/donations', 'Faire un don')}
+                >
+                  <IconSymbol name="heart.fill" size={32} color={colors.error} />
+                  <Text style={styles.actionText}>Faire un don</Text>
+                </Pressable>
+              </Animated.View>
+              
+              <Animated.View entering={FadeInDown.delay(1500).springify()}>
+                <Pressable
+                  style={styles.actionCard}
+                  onPress={() => handleCardPress('/chat', 'Chat')}
+                >
+                  <IconSymbol name="bubble.left.and.bubble.right.fill" size={32} color={colors.accent} />
+                  <Text style={styles.actionText}>Chat</Text>
+                </Pressable>
+              </Animated.View>
+              
+              <Animated.View entering={FadeInDown.delay(1600).springify()}>
+                <Pressable
+                  style={styles.actionCard}
+                  onPress={() => handleCardPress('/contact', 'Contact')}
+                >
+                  <IconSymbol name="envelope.fill" size={32} color={colors.highlight} />
+                  <Text style={styles.actionText}>Contact</Text>
+                </Pressable>
+              </Animated.View>
             </View>
           </View>
         </ScrollView>
@@ -244,11 +365,6 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingBottom: 40,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   header: {
     alignItems: 'center',
