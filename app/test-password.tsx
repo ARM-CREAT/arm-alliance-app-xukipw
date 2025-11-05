@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -19,26 +19,37 @@ import { useAuth } from '@/contexts/AuthContext';
 export default function TestPasswordScreen() {
   const [testPassword, setTestPassword] = useState('');
   const [testResult, setTestResult] = useState<string | null>(null);
-  const { login, isAdmin } = useAuth();
+  const [showPassword, setShowPassword] = useState(false);
+  const { login, isAdmin, isLoading } = useAuth();
 
   const CORRECT_PASSWORD = 'ARM2024Admin!';
+
+  // Redirect non-admin users
+  useEffect(() => {
+    if (!isLoading && !isAdmin) {
+      Alert.alert(
+        'Accès Refusé',
+        'Cette page est réservée aux administrateurs. Veuillez vous connecter d\'abord.',
+        [
+          {
+            text: 'Se Connecter',
+            onPress: () => router.replace('/admin-login'),
+          },
+          {
+            text: 'Retour',
+            onPress: () => router.back(),
+            style: 'cancel',
+          },
+        ]
+      );
+    }
+  }, [isAdmin, isLoading]);
 
   const handleTestPassword = async () => {
     console.log('=== TEST DE MOT DE PASSE ===');
     console.log('Mot de passe saisi:', testPassword);
-    console.log('Mot de passe correct:', CORRECT_PASSWORD);
     console.log('Longueur du mot de passe saisi:', testPassword.length);
-    console.log('Longueur du mot de passe correct:', CORRECT_PASSWORD.length);
     console.log('Correspondance exacte:', testPassword === CORRECT_PASSWORD);
-    
-    // Test caractère par caractère
-    console.log('Comparaison caractère par caractère:');
-    for (let i = 0; i < Math.max(testPassword.length, CORRECT_PASSWORD.length); i++) {
-      const char1 = testPassword[i] || '(vide)';
-      const char2 = CORRECT_PASSWORD[i] || '(vide)';
-      const match = char1 === char2 ? '✓' : '✗';
-      console.log(`Position ${i}: "${char1}" vs "${char2}" ${match}`);
-    }
 
     // Test de connexion réel
     const success = await login(testPassword);
@@ -67,9 +78,81 @@ export default function TestPasswordScreen() {
   };
 
   const handleCopyPassword = () => {
+    if (!isAdmin) {
+      Alert.alert('Accès Refusé', 'Seuls les administrateurs peuvent copier le mot de passe.');
+      return;
+    }
     setTestPassword(CORRECT_PASSWORD);
     Alert.alert('Copié', 'Le mot de passe correct a été copié dans le champ');
   };
+
+  const togglePasswordVisibility = () => {
+    if (!isAdmin) {
+      Alert.alert('Accès Refusé', 'Seuls les administrateurs peuvent voir le mot de passe.');
+      return;
+    }
+    setShowPassword(!showPassword);
+  };
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <>
+        <Stack.Screen
+          options={{
+            title: 'Test du Mot de Passe Admin',
+            headerStyle: {
+              backgroundColor: colors.primary,
+            },
+            headerTintColor: colors.white,
+          }}
+        />
+        <SafeAreaView style={[commonStyles.container, { backgroundColor: colors.background }]}>
+          <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+            <Text style={styles.loadingText}>Vérification de l'authentification...</Text>
+          </View>
+        </SafeAreaView>
+      </>
+    );
+  }
+
+  // Show access denied if not admin
+  if (!isAdmin) {
+    return (
+      <>
+        <Stack.Screen
+          options={{
+            title: 'Accès Refusé',
+            headerStyle: {
+              backgroundColor: colors.primary,
+            },
+            headerTintColor: colors.white,
+          }}
+        />
+        <SafeAreaView style={[commonStyles.container, { backgroundColor: colors.background }]}>
+          <View style={[styles.container, styles.accessDeniedContainer]}>
+            <IconSymbol name="lock.shield.fill" size={80} color={colors.error} />
+            <Text style={styles.accessDeniedTitle}>Accès Refusé</Text>
+            <Text style={styles.accessDeniedText}>
+              Cette page est réservée aux administrateurs authentifiés.
+            </Text>
+            <Pressable
+              style={[buttonStyles.primary, { marginTop: 24 }]}
+              onPress={() => router.replace('/admin-login')}
+            >
+              <Text style={buttonStyles.text}>Se Connecter</Text>
+            </Pressable>
+            <Pressable
+              style={[buttonStyles.secondary, { marginTop: 12 }]}
+              onPress={() => router.back()}
+            >
+              <Text style={buttonStyles.text}>Retour</Text>
+            </Pressable>
+          </View>
+        </SafeAreaView>
+      </>
+    );
+  }
 
   return (
     <>
@@ -97,59 +180,85 @@ export default function TestPasswordScreen() {
             <Text style={styles.cardTitle}>Statut de Connexion</Text>
             <View style={styles.statusRow}>
               <Text style={styles.statusLabel}>État actuel:</Text>
-              <View style={[styles.badge, isAdmin ? styles.badgeSuccess : styles.badgeWarning]}>
-                <Text style={styles.badgeText}>
-                  {isAdmin ? '✓ Connecté' : '○ Non connecté'}
-                </Text>
+              <View style={[styles.badge, styles.badgeSuccess]}>
+                <Text style={styles.badgeText}>✓ Administrateur Connecté</Text>
               </View>
             </View>
           </View>
 
-          {/* Mot de passe correct */}
+          {/* Mot de passe correct - Sécurisé */}
           <View style={[styles.card, styles.passwordCard]}>
-            <Text style={styles.cardTitle}>Mot de Passe Correct</Text>
+            <Text style={styles.cardTitle}>Mot de Passe Administrateur</Text>
             <View style={styles.passwordBox}>
-              <Text style={styles.passwordText}>{CORRECT_PASSWORD}</Text>
+              <Text style={styles.passwordText}>
+                {showPassword ? CORRECT_PASSWORD : '••••••••••••••'}
+              </Text>
             </View>
-            <View style={styles.passwordDetails}>
-              <Text style={styles.detailText}>• Longueur: {CORRECT_PASSWORD.length} caractères</Text>
-              <Text style={styles.detailText}>• Contient: Majuscules, minuscules, chiffres et symboles</Text>
-              <Text style={styles.detailText}>• Format: ARM2024Admin!</Text>
+            
+            <View style={styles.passwordActions}>
+              <Pressable 
+                style={[buttonStyles.secondary, { flex: 1 }]} 
+                onPress={togglePasswordVisibility}
+              >
+                <IconSymbol 
+                  name={showPassword ? "eye.slash.fill" : "eye.fill"} 
+                  size={20} 
+                  color={colors.white} 
+                />
+                <Text style={buttonStyles.text}>
+                  {showPassword ? 'Masquer' : 'Afficher'}
+                </Text>
+              </Pressable>
+              
+              <Pressable 
+                style={[buttonStyles.secondary, { flex: 1 }]} 
+                onPress={handleCopyPassword}
+              >
+                <IconSymbol name="doc.on.doc.fill" size={20} color={colors.white} />
+                <Text style={buttonStyles.text}>Copier</Text>
+              </Pressable>
             </View>
-            <Pressable style={buttonStyles.secondary} onPress={handleCopyPassword}>
-              <IconSymbol name="doc.on.doc.fill" size={20} color={colors.white} />
-              <Text style={buttonStyles.text}>Copier dans le champ de test</Text>
-            </Pressable>
+
+            {showPassword && (
+              <View style={styles.passwordDetails}>
+                <Text style={styles.detailText}>• Longueur: {CORRECT_PASSWORD.length} caractères</Text>
+                <Text style={styles.detailText}>• Contient: Majuscules, minuscules, chiffres et symboles</Text>
+                <Text style={styles.detailText}>• Format: ARM2024Admin!</Text>
+              </View>
+            )}
           </View>
 
           {/* Test du mot de passe */}
           <View style={styles.card}>
             <Text style={styles.cardTitle}>Tester un Mot de Passe</Text>
             <Text style={commonStyles.label}>Entrez le mot de passe à tester</Text>
-            <TextInput
-              style={commonStyles.input}
-              value={testPassword}
-              onChangeText={setTestPassword}
-              placeholder="Tapez le mot de passe ici"
-              placeholderTextColor={colors.textSecondary}
-              autoCapitalize="none"
-              autoCorrect={false}
-            />
+            <View style={styles.inputContainer}>
+              <TextInput
+                style={[commonStyles.input, { flex: 1 }]}
+                value={testPassword}
+                onChangeText={setTestPassword}
+                placeholder="Tapez le mot de passe ici"
+                placeholderTextColor={colors.textSecondary}
+                autoCapitalize="none"
+                autoCorrect={false}
+                secureTextEntry={true}
+              />
+            </View>
             
             {testPassword.length > 0 && (
               <View style={styles.comparisonBox}>
-                <Text style={styles.comparisonTitle}>Comparaison en temps réel:</Text>
+                <Text style={styles.comparisonTitle}>Analyse:</Text>
                 <Text style={styles.comparisonText}>
-                  Saisi: "{testPassword}" ({testPassword.length} car.)
+                  Longueur du mot de passe: {testPassword.length} caractères
                 </Text>
                 <Text style={styles.comparisonText}>
-                  Attendu: "{CORRECT_PASSWORD}" ({CORRECT_PASSWORD.length} car.)
+                  Longueur attendue: {CORRECT_PASSWORD.length} caractères
                 </Text>
                 <Text style={[
                   styles.comparisonResult,
-                  testPassword === CORRECT_PASSWORD ? styles.matchSuccess : styles.matchFail
+                  testPassword.length === CORRECT_PASSWORD.length ? styles.matchSuccess : styles.matchFail
                 ]}>
-                  {testPassword === CORRECT_PASSWORD ? '✓ Correspondance exacte' : '✗ Pas de correspondance'}
+                  {testPassword.length === CORRECT_PASSWORD.length ? '✓ Longueur correcte' : '✗ Longueur incorrecte'}
                 </Text>
               </View>
             )}
@@ -179,13 +288,13 @@ export default function TestPasswordScreen() {
             <View style={styles.instructionItem}>
               <Text style={styles.instructionNumber}>1.</Text>
               <Text style={styles.instructionText}>
-                Le mot de passe correct est affiché ci-dessus
+                Cliquez sur "Afficher" pour voir le mot de passe administrateur
               </Text>
             </View>
             <View style={styles.instructionItem}>
               <Text style={styles.instructionNumber}>2.</Text>
               <Text style={styles.instructionText}>
-                Cliquez sur "Copier dans le champ de test" pour le copier automatiquement
+                Utilisez "Copier" pour copier le mot de passe dans le champ de test
               </Text>
             </View>
             <View style={styles.instructionItem}>
@@ -197,9 +306,29 @@ export default function TestPasswordScreen() {
             <View style={styles.instructionItem}>
               <Text style={styles.instructionNumber}>4.</Text>
               <Text style={styles.instructionText}>
-                Si le test réussit, vous serez connecté en tant qu'administrateur
+                Cette page est sécurisée et accessible uniquement aux administrateurs
               </Text>
             </View>
+          </View>
+
+          {/* Informations de sécurité */}
+          <View style={[styles.card, styles.securityCard]}>
+            <View style={styles.securityHeader}>
+              <IconSymbol name="lock.shield.fill" size={24} color={colors.success} />
+              <Text style={styles.securityTitle}>Sécurité</Text>
+            </View>
+            <Text style={styles.securityText}>
+              • Cette page est protégée par authentification
+            </Text>
+            <Text style={styles.securityText}>
+              • Le mot de passe est masqué par défaut
+            </Text>
+            <Text style={styles.securityText}>
+              • Seuls les administrateurs peuvent accéder à cette page
+            </Text>
+            <Text style={styles.securityText}>
+              • Les mots de passe saisis sont sécurisés
+            </Text>
           </View>
 
           {/* Informations de plateforme */}
@@ -212,20 +341,18 @@ export default function TestPasswordScreen() {
           {/* Boutons de navigation */}
           <View style={styles.navigationButtons}>
             <Pressable
-              style={[buttonStyles.secondary, { flex: 1 }]}
-              onPress={() => router.push('/admin-login')}
+              style={[buttonStyles.primary, { flex: 1 }]}
+              onPress={() => router.push('/admin-dashboard')}
             >
-              <Text style={buttonStyles.text}>Page de Connexion</Text>
+              <Text style={buttonStyles.text}>Tableau de Bord</Text>
             </Pressable>
             
-            {isAdmin && (
-              <Pressable
-                style={[buttonStyles.primary, { flex: 1 }]}
-                onPress={() => router.push('/admin-dashboard')}
-              >
-                <Text style={buttonStyles.text}>Tableau de Bord</Text>
-              </Pressable>
-            )}
+            <Pressable
+              style={[buttonStyles.secondary, { flex: 1 }]}
+              onPress={() => router.push('/admin-guide')}
+            >
+              <Text style={buttonStyles.text}>Guide Admin</Text>
+            </Pressable>
           </View>
 
           <Pressable
@@ -265,6 +392,29 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     textAlign: 'center',
     lineHeight: 22,
+  },
+  loadingText: {
+    fontSize: 16,
+    color: colors.textSecondary,
+    textAlign: 'center',
+  },
+  accessDeniedContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 40,
+  },
+  accessDeniedTitle: {
+    fontSize: 28,
+    fontWeight: '800',
+    color: colors.error,
+    marginTop: 24,
+    marginBottom: 12,
+  },
+  accessDeniedText: {
+    fontSize: 16,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 24,
   },
   card: {
     backgroundColor: colors.card,
@@ -313,9 +463,6 @@ const styles = StyleSheet.create({
   badgeSuccess: {
     backgroundColor: '#10b981',
   },
-  badgeWarning: {
-    backgroundColor: '#f59e0b',
-  },
   badgeText: {
     color: colors.white,
     fontWeight: '700',
@@ -331,23 +478,35 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     borderWidth: 2,
     borderColor: colors.primary,
+    minHeight: 60,
+    justifyContent: 'center',
   },
   passwordText: {
     fontSize: 20,
     fontWeight: '800',
     color: colors.primary,
     textAlign: 'center',
-    letterSpacing: 1,
+    letterSpacing: 2,
     fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
   },
-  passwordDetails: {
+  passwordActions: {
+    flexDirection: 'row',
+    gap: 12,
     marginBottom: 16,
+  },
+  passwordDetails: {
+    marginTop: 8,
   },
   detailText: {
     fontSize: 14,
     color: colors.textSecondary,
     marginBottom: 6,
     lineHeight: 20,
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
   },
   comparisonBox: {
     backgroundColor: colors.background,
@@ -365,7 +524,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: colors.textSecondary,
     marginBottom: 4,
-    fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
   },
   comparisonResult: {
     fontSize: 14,
@@ -419,6 +577,28 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 14,
     color: colors.text,
+    lineHeight: 20,
+  },
+  securityCard: {
+    backgroundColor: '#10b981' + '15',
+    borderWidth: 1,
+    borderColor: '#10b981',
+  },
+  securityHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  securityTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: colors.text,
+    marginLeft: 8,
+  },
+  securityText: {
+    fontSize: 14,
+    color: colors.text,
+    marginBottom: 8,
     lineHeight: 20,
   },
   platformInfo: {
