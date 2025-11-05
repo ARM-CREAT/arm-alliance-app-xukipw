@@ -108,7 +108,7 @@ export default function ProfileScreen() {
                   onPress={() => toggleExpand(member.id)}
                 >
                   <Image 
-                    source={require('@/assets/images/031bc733-c270-4f68-a82f-7339c4bdef87.jpeg')}
+                    source={require('@/assets/images/5aab13fd-fe57-45c4-bde2-69d0cd5cb2b6.jpeg')}
                     style={styles.memberImage}
                     resizeMode="contain"
                   />
