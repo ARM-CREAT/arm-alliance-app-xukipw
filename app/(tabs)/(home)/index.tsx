@@ -60,7 +60,7 @@ export default function HomeScreen() {
           {/* Hero Section with Logo */}
           <View style={styles.heroSection}>
             <Image
-              source={{ uri: 'https://prod-finalquest-user-projects-storage-bucket-aws.s3.amazonaws.com/user-projects/ef2123d4-1cc1-4115-a9f7-a9eb468170b4/assets/images/985330b5-79d1-46f0-a940-6a9b43f3f4ea.jpeg?AWSAccessKeyId=AKIAVRUVRKQJC5DISQ4Q&Signature=RDGWypHkHgoZJ4PnoUkXULAbvdc%3D&Expires=1762284336' }}
+              source={require('@/assets/images/985330b5-79d1-46f0-a940-6a9b43f3f4ea.jpeg')}
               style={styles.logo}
               resizeMode="contain"
             />
@@ -307,8 +307,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 20,
     alignSelf: 'flex-end',
-    boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
-    elevation: 2,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
     borderWidth: 1,
     borderColor: colors.border,
   },
@@ -336,6 +345,7 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     color: colors.white,
     marginBottom: 8,
+    textAlign: 'center',
   },
   heroSubtitle: {
     fontSize: 18,
@@ -354,6 +364,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     color: colors.black,
+    textAlign: 'center',
   },
   programSection: {
     marginTop: 24,
@@ -390,8 +401,17 @@ const styles = StyleSheet.create({
     padding: 16,
     alignItems: 'center',
     width: '48%',
-    boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
-    elevation: 2,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
     borderWidth: 1,
     borderColor: colors.border,
   },
@@ -408,6 +428,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: colors.text,
     marginBottom: 4,
+    textAlign: 'center',
   },
   actionDescription: {
     fontSize: 12,
