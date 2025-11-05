@@ -16,7 +16,7 @@ const members = [
     location: 'Avenida Castilla la Mancha 122, Yuncos, Toledo, Espagne',
     phone: '+34 632 60 71 01',
     phoneRaw: '0034632607101',
-    image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400',
+    image: require('@/assets/images/bc64fc44-1359-4439-90e9-3cbc3e5e00de.jpeg'),
     email: 'president@arm-mali.org',
   },
   {
@@ -27,7 +27,7 @@ const members = [
     location: 'Milan, Italie',
     phone: '',
     phoneRaw: '',
-    image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400',
+    image: require('@/assets/images/bc64fc44-1359-4439-90e9-3cbc3e5e00de.jpeg'),
     email: 'dadou.sangare@arm-mali.org',
   },
   {
@@ -38,7 +38,7 @@ const members = [
     location: 'Koutiala, Mali',
     phone: '+223 76 30 48 69',
     phoneRaw: '0022376304869',
-    image: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400',
+    image: require('@/assets/images/bc64fc44-1359-4439-90e9-3cbc3e5e00de.jpeg'),
     email: 'oumar.keita@arm-mali.org',
   },
   {
@@ -49,7 +49,7 @@ const members = [
     location: 'Bamako, Mali',
     phone: '+223 79 81 93 12',
     phoneRaw: '0022379819312',
-    image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400',
+    image: require('@/assets/images/bc64fc44-1359-4439-90e9-3cbc3e5e00de.jpeg'),
     email: 'karifa.keita@arm-mali.org',
   },
   {
@@ -60,7 +60,7 @@ const members = [
     location: 'Sebenikoro, Bamako, Mali',
     phone: '+223 76 11 22 63',
     phoneRaw: '0022376112263',
-    image: 'https://images.unsplash.com/photo-1519345182560-3f2917c472ef?w=400',
+    image: require('@/assets/images/bc64fc44-1359-4439-90e9-3cbc3e5e00de.jpeg'),
     email: 'modibo.keita@arm-mali.org',
   },
   {
@@ -71,7 +71,7 @@ const members = [
     location: 'Sebenikoro, Bamako, Mali',
     phone: '+223 75 17 99 20',
     phoneRaw: '0022375179920',
-    image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400',
+    image: require('@/assets/images/bc64fc44-1359-4439-90e9-3cbc3e5e00de.jpeg'),
     email: 'sokona.keita@arm-mali.org',
   },
   {
@@ -82,7 +82,7 @@ const members = [
     location: 'Italie',
     phone: '+39 350 939 3002',
     phoneRaw: '00393509393002',
-    image: 'https://images.unsplash.com/photo-1463453091185-61582044d556?w=400',
+    image: require('@/assets/images/bc64fc44-1359-4439-90e9-3cbc3e5e00de.jpeg'),
     email: 'daouda.sangare@arm-mali.org',
   },
 ];
@@ -164,7 +164,7 @@ export default function ProfileScreen() {
                   onPress={() => toggleExpand(member.id)}
                 >
                   <Image 
-                    source={{ uri: member.image }}
+                    source={member.image}
                     style={styles.memberImage}
                     resizeMode="cover"
                   />
