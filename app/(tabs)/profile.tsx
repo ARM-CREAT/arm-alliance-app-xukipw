@@ -8,89 +8,11 @@ import { colors, commonStyles } from "@/styles/commonStyles";
 import Animated, { FadeInDown, FadeIn } from 'react-native-reanimated';
 import { useLanguage } from "@/contexts/LanguageContext";
 import { LanguageSelector } from "@/components/LanguageSelector";
-
-const members = [
-  {
-    id: '1',
-    name: 'Lassine Diakité',
-    roleKey: 'profile.role.president',
-    profession: 'Entrepreneur',
-    location: 'Avenida Castilla la Mancha 122, Yuncos, Toledo, Espagne',
-    phone: '+34 632 60 71 01',
-    phoneRaw: '0034632607101',
-    image: require('@/assets/images/bc64fc44-1359-4439-90e9-3cbc3e5e00de.jpeg'),
-    email: 'president@arm-mali.org',
-  },
-  {
-    id: '2',
-    name: 'Dadou Sangare',
-    roleKey: 'profile.role.vicepresident1',
-    profession: '',
-    location: 'Milan, Italie',
-    phone: '',
-    phoneRaw: '',
-    image: require('@/assets/images/bc64fc44-1359-4439-90e9-3cbc3e5e00de.jpeg'),
-    email: 'dadou.sangare@arm-mali.org',
-  },
-  {
-    id: '3',
-    name: 'Oumar Keita',
-    roleKey: 'profile.role.vicepresident2',
-    profession: 'Enseignant',
-    location: 'Koutiala, Mali',
-    phone: '+223 76 30 48 69',
-    phoneRaw: '0022376304869',
-    image: require('@/assets/images/bc64fc44-1359-4439-90e9-3cbc3e5e00de.jpeg'),
-    email: 'oumar.keita@arm-mali.org',
-  },
-  {
-    id: '4',
-    name: 'Karifa Keita',
-    roleKey: 'profile.role.secretary',
-    profession: 'Fonctionnaire d\'État',
-    location: 'Bamako, Mali',
-    phone: '+223 79 81 93 12',
-    phoneRaw: '0022379819312',
-    image: require('@/assets/images/bc64fc44-1359-4439-90e9-3cbc3e5e00de.jpeg'),
-    email: 'karifa.keita@arm-mali.org',
-  },
-  {
-    id: '5',
-    name: 'Modibo Keita',
-    roleKey: 'profile.role.admin',
-    profession: 'Gestionnaire',
-    location: 'Sebenikoro, Bamako, Mali',
-    phone: '+223 76 11 22 63',
-    phoneRaw: '0022376112263',
-    image: require('@/assets/images/bc64fc44-1359-4439-90e9-3cbc3e5e00de.jpeg'),
-    email: 'modibo.keita@arm-mali.org',
-  },
-  {
-    id: '6',
-    name: 'Sokona Keita',
-    roleKey: 'profile.role.treasurer',
-    profession: 'Sage-femme',
-    location: 'Sebenikoro, Bamako, Mali',
-    phone: '+223 75 17 99 20',
-    phoneRaw: '0022375179920',
-    image: require('@/assets/images/bc64fc44-1359-4439-90e9-3cbc3e5e00de.jpeg'),
-    email: 'sokona.keita@arm-mali.org',
-  },
-  {
-    id: '7',
-    name: 'Daouda Sangare',
-    roleKey: 'profile.role.member',
-    profession: '',
-    location: 'Italie',
-    phone: '+39 350 939 3002',
-    phoneRaw: '00393509393002',
-    image: require('@/assets/images/bc64fc44-1359-4439-90e9-3cbc3e5e00de.jpeg'),
-    email: 'daouda.sangare@arm-mali.org',
-  },
-];
+import { useContent } from "@/contexts/ContentContext";
 
 export default function ProfileScreen() {
   const { t } = useLanguage();
+  const { members } = useContent();
   const [expandedMember, setExpandedMember] = useState<string | null>(null);
   const [showLanguageSelector, setShowLanguageSelector] = useState(false);
 
@@ -186,7 +108,7 @@ export default function ProfileScreen() {
                   onPress={() => toggleExpand(member.id)}
                 >
                   <Image 
-                    source={member.image}
+                    source={{ uri: member.image }}
                     style={styles.memberImage}
                     resizeMode="cover"
                   />

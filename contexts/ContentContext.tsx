@@ -29,10 +29,24 @@ export interface MediaItem {
   date: string;
 }
 
+export interface MemberItem {
+  id: string;
+  name: string;
+  roleKey: string;
+  profession: string;
+  location: string;
+  phone: string;
+  phoneRaw: string;
+  email: string;
+  image: string;
+  order: number;
+}
+
 interface ContentContextType {
   news: NewsItem[];
   events: EventItem[];
   media: MediaItem[];
+  members: MemberItem[];
   addNews: (item: Omit<NewsItem, 'id'>) => Promise<void>;
   updateNews: (id: string, item: Partial<NewsItem>) => Promise<void>;
   deleteNews: (id: string) => Promise<void>;
@@ -41,6 +55,9 @@ interface ContentContextType {
   deleteEvent: (id: string) => Promise<void>;
   addMedia: (item: Omit<MediaItem, 'id'>) => Promise<void>;
   deleteMedia: (id: string) => Promise<void>;
+  addMember: (item: Omit<MemberItem, 'id'>) => Promise<void>;
+  updateMember: (id: string, item: Partial<MemberItem>) => Promise<void>;
+  deleteMember: (id: string) => Promise<void>;
   refreshContent: () => Promise<void>;
   isLoading: boolean;
 }
@@ -51,6 +68,7 @@ const STORAGE_KEYS = {
   NEWS: 'arm_news',
   EVENTS: 'arm_events',
   MEDIA: 'arm_media',
+  MEMBERS: 'arm_members',
   INITIALIZED: 'arm_content_initialized',
 };
 
@@ -127,10 +145,98 @@ const defaultMedia: MediaItem[] = [
   },
 ];
 
+const defaultMembers: MemberItem[] = [
+  {
+    id: '1',
+    name: 'Lassine Diakité',
+    roleKey: 'profile.role.president',
+    profession: 'Entrepreneur',
+    location: 'Avenida Castilla la Mancha 122, Yuncos, Toledo, Espagne',
+    phone: '+34 632 60 71 01',
+    phoneRaw: '0034632607101',
+    email: 'president@arm-mali.org',
+    image: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=800',
+    order: 1,
+  },
+  {
+    id: '2',
+    name: 'Dadou Sangare',
+    roleKey: 'profile.role.vicepresident1',
+    profession: '',
+    location: 'Milan, Italie',
+    phone: '',
+    phoneRaw: '',
+    email: 'dadou.sangare@arm-mali.org',
+    image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800',
+    order: 2,
+  },
+  {
+    id: '3',
+    name: 'Oumar Keita',
+    roleKey: 'profile.role.vicepresident2',
+    profession: 'Enseignant',
+    location: 'Koutiala, Mali',
+    phone: '+223 76 30 48 69',
+    phoneRaw: '0022376304869',
+    email: 'oumar.keita@arm-mali.org',
+    image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=800',
+    order: 3,
+  },
+  {
+    id: '4',
+    name: 'Karifa Keita',
+    roleKey: 'profile.role.secretary',
+    profession: 'Fonctionnaire d\'État',
+    location: 'Bamako, Mali',
+    phone: '+223 79 81 93 12',
+    phoneRaw: '0022379819312',
+    email: 'karifa.keita@arm-mali.org',
+    image: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=800',
+    order: 4,
+  },
+  {
+    id: '5',
+    name: 'Modibo Keita',
+    roleKey: 'profile.role.admin',
+    profession: 'Gestionnaire',
+    location: 'Sebenikoro, Bamako, Mali',
+    phone: '+223 76 11 22 63',
+    phoneRaw: '0022376112263',
+    email: 'modibo.keita@arm-mali.org',
+    image: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=800',
+    order: 5,
+  },
+  {
+    id: '6',
+    name: 'Sokona Keita',
+    roleKey: 'profile.role.treasurer',
+    profession: 'Sage-femme',
+    location: 'Sebenikoro, Bamako, Mali',
+    phone: '+223 75 17 99 20',
+    phoneRaw: '0022375179920',
+    email: 'sokona.keita@arm-mali.org',
+    image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=800',
+    order: 6,
+  },
+  {
+    id: '7',
+    name: 'Daouda Sangare',
+    roleKey: 'profile.role.member',
+    profession: '',
+    location: 'Italie',
+    phone: '+39 350 939 3002',
+    phoneRaw: '00393509393002',
+    email: 'daouda.sangare@arm-mali.org',
+    image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=800',
+    order: 7,
+  },
+];
+
 export function ContentProvider({ children }: { children: React.ReactNode }) {
   const [news, setNews] = useState<NewsItem[]>([]);
   const [events, setEvents] = useState<EventItem[]>([]);
   const [media, setMedia] = useState<MediaItem[]>([]);
+  const [members, setMembers] = useState<MemberItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -149,11 +255,13 @@ export function ContentProvider({ children }: { children: React.ReactNode }) {
           AsyncStorage.setItem(STORAGE_KEYS.NEWS, JSON.stringify(defaultNews)),
           AsyncStorage.setItem(STORAGE_KEYS.EVENTS, JSON.stringify(defaultEvents)),
           AsyncStorage.setItem(STORAGE_KEYS.MEDIA, JSON.stringify(defaultMedia)),
+          AsyncStorage.setItem(STORAGE_KEYS.MEMBERS, JSON.stringify(defaultMembers)),
           AsyncStorage.setItem(STORAGE_KEYS.INITIALIZED, 'true'),
         ]);
         setNews(defaultNews);
         setEvents(defaultEvents);
         setMedia(defaultMedia);
+        setMembers(defaultMembers);
       } else {
         console.log('Loading existing content');
         await loadContent();
@@ -164,6 +272,7 @@ export function ContentProvider({ children }: { children: React.ReactNode }) {
       setNews(defaultNews);
       setEvents(defaultEvents);
       setMedia(defaultMedia);
+      setMembers(defaultMembers);
     } finally {
       setIsLoading(false);
       console.log('Content initialization complete');
@@ -172,10 +281,11 @@ export function ContentProvider({ children }: { children: React.ReactNode }) {
 
   const loadContent = async () => {
     try {
-      const [storedNews, storedEvents, storedMedia] = await Promise.all([
+      const [storedNews, storedEvents, storedMedia, storedMembers] = await Promise.all([
         AsyncStorage.getItem(STORAGE_KEYS.NEWS),
         AsyncStorage.getItem(STORAGE_KEYS.EVENTS),
         AsyncStorage.getItem(STORAGE_KEYS.MEDIA),
+        AsyncStorage.getItem(STORAGE_KEYS.MEMBERS),
       ]);
 
       if (storedNews) {
@@ -198,12 +308,20 @@ export function ContentProvider({ children }: { children: React.ReactNode }) {
       } else {
         setMedia(defaultMedia);
       }
+
+      if (storedMembers) {
+        const parsedMembers = JSON.parse(storedMembers);
+        setMembers(parsedMembers.length > 0 ? parsedMembers : defaultMembers);
+      } else {
+        setMembers(defaultMembers);
+      }
     } catch (error) {
       console.error('Error loading content:', error);
       // Fallback to default content
       setNews(defaultNews);
       setEvents(defaultEvents);
       setMedia(defaultMedia);
+      setMembers(defaultMembers);
     }
   };
 
@@ -234,6 +352,16 @@ export function ContentProvider({ children }: { children: React.ReactNode }) {
       console.log('Media saved successfully');
     } catch (error) {
       console.error('Error saving media:', error);
+    }
+  };
+
+  const saveMembers = async (newMembers: MemberItem[]) => {
+    try {
+      await AsyncStorage.setItem(STORAGE_KEYS.MEMBERS, JSON.stringify(newMembers));
+      setMembers(newMembers);
+      console.log('Members saved successfully');
+    } catch (error) {
+      console.error('Error saving members:', error);
     }
   };
 
@@ -286,6 +414,26 @@ export function ContentProvider({ children }: { children: React.ReactNode }) {
     await saveMedia(filtered);
   };
 
+  const addMember = async (item: Omit<MemberItem, 'id'>) => {
+    const newItem: MemberItem = {
+      ...item,
+      id: Date.now().toString(),
+    };
+    const sortedMembers = [...members, newItem].sort((a, b) => a.order - b.order);
+    await saveMembers(sortedMembers);
+  };
+
+  const updateMember = async (id: string, item: Partial<MemberItem>) => {
+    const updated = members.map(m => m.id === id ? { ...m, ...item } : m);
+    const sortedMembers = updated.sort((a, b) => a.order - b.order);
+    await saveMembers(sortedMembers);
+  };
+
+  const deleteMember = async (id: string) => {
+    const filtered = members.filter(m => m.id !== id);
+    await saveMembers(filtered);
+  };
+
   const refreshContent = async () => {
     console.log('Refreshing content...');
     setIsLoading(true);
@@ -300,6 +448,7 @@ export function ContentProvider({ children }: { children: React.ReactNode }) {
         news,
         events,
         media,
+        members,
         addNews,
         updateNews,
         deleteNews,
@@ -308,6 +457,9 @@ export function ContentProvider({ children }: { children: React.ReactNode }) {
         deleteEvent,
         addMedia,
         deleteMedia,
+        addMember,
+        updateMember,
+        deleteMember,
         refreshContent,
         isLoading,
       }}
