@@ -1,13 +1,18 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Stack } from "expo-router";
 import { ScrollView, StyleSheet, View, Text, Image, Pressable, Platform, Alert } from "react-native";
 import { IconSymbol } from "@/components/IconSymbol";
 import { colors, commonStyles, buttonStyles } from "@/styles/commonStyles";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Link, router } from "expo-router";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { LanguageSelector } from "@/components/LanguageSelector";
 
 export default function HomeScreen() {
+  const { t } = useLanguage();
+  const [showLanguageSelector, setShowLanguageSelector] = useState(false);
+
   const handleDonation = () => {
     router.push('/donations');
   };
@@ -17,11 +22,16 @@ export default function HomeScreen() {
       {Platform.OS === 'ios' && (
         <Stack.Screen
           options={{
-            title: "A.R.M",
+            title: t('home.title'),
             headerStyle: {
               backgroundColor: colors.primary,
             },
             headerTintColor: colors.white,
+            headerRight: () => (
+              <Pressable onPress={() => setShowLanguageSelector(true)} style={{ marginRight: 8 }}>
+                <IconSymbol name="globe" size={24} color={colors.white} />
+              </Pressable>
+            ),
           }}
         />
       )}
@@ -34,6 +44,19 @@ export default function HomeScreen() {
           ]}
           showsVerticalScrollIndicator={false}
         >
+          {/* Language Selector Button for Android */}
+          {Platform.OS !== 'ios' && (
+            <View style={styles.languageButtonContainer}>
+              <Pressable 
+                style={styles.languageButton}
+                onPress={() => setShowLanguageSelector(true)}
+              >
+                <IconSymbol name="globe" size={20} color={colors.primary} />
+                <Text style={styles.languageButtonText}>{t('language.title')}</Text>
+              </Pressable>
+            </View>
+          )}
+
           {/* Hero Section with Logo */}
           <View style={styles.heroSection}>
             <Image
@@ -41,70 +64,69 @@ export default function HomeScreen() {
               style={styles.logo}
               resizeMode="contain"
             />
-            <Text style={styles.heroTitle}>A.R.M</Text>
-            <Text style={styles.heroSubtitle}>Alliance pour le Rassemblement Malien</Text>
+            <Text style={styles.heroTitle}>{t('home.title')}</Text>
+            <Text style={styles.heroSubtitle}>{t('home.subtitle')}</Text>
             <View style={styles.mottoContainer}>
-              <Text style={styles.motto}>Fraternité • Liberté • Égalité</Text>
+              <Text style={styles.motto}>{t('home.motto')}</Text>
             </View>
           </View>
 
           {/* Political Program Section */}
           <View style={[commonStyles.section, styles.programSection]}>
-            <Text style={[commonStyles.subtitle, { color: colors.primary }]}>Notre Programme Politique</Text>
+            <Text style={[commonStyles.subtitle, { color: colors.primary }]}>{t('home.program.title')}</Text>
             <View style={commonStyles.cardWhite}>
               <Text style={commonStyles.text}>
-                L&apos;Alliance pour le Rassemblement Malien (A.R.M) s&apos;engage à construire un Mali uni, prospère et démocratique. 
-                Notre vision repose sur les valeurs fondamentales de fraternité, liberté et égalité pour tous les Maliens.
+                {t('home.program.intro')}
               </Text>
               <View style={styles.programPoint}>
                 <IconSymbol name="checkmark.circle.fill" size={20} color={colors.primary} />
-                <Text style={styles.programPointText}>Renforcement de la démocratie et de l&apos;État de droit</Text>
+                <Text style={styles.programPointText}>{t('home.program.point1')}</Text>
               </View>
               <View style={styles.programPoint}>
                 <IconSymbol name="checkmark.circle.fill" size={20} color={colors.primary} />
-                <Text style={styles.programPointText}>Développement économique et création d&apos;emplois</Text>
+                <Text style={styles.programPointText}>{t('home.program.point2')}</Text>
               </View>
               <View style={styles.programPoint}>
                 <IconSymbol name="checkmark.circle.fill" size={20} color={colors.primary} />
-                <Text style={styles.programPointText}>Éducation de qualité pour tous</Text>
+                <Text style={styles.programPointText}>{t('home.program.point3')}</Text>
               </View>
               <View style={styles.programPoint}>
                 <IconSymbol name="checkmark.circle.fill" size={20} color={colors.primary} />
-                <Text style={styles.programPointText}>Santé accessible et modernisée</Text>
+                <Text style={styles.programPointText}>{t('home.program.point4')}</Text>
               </View>
               <View style={styles.programPoint}>
                 <IconSymbol name="checkmark.circle.fill" size={20} color={colors.primary} />
-                <Text style={styles.programPointText}>Unité nationale et cohésion sociale</Text>
+                <Text style={styles.programPointText}>{t('home.program.point5')}</Text>
               </View>
             </View>
           </View>
 
           {/* Donation Section */}
           <View style={[commonStyles.section, styles.donationSection]}>
-            <Text style={[commonStyles.subtitle, { color: colors.primary }]}>Soutenez Notre Mouvement</Text>
+            <Text style={[commonStyles.subtitle, { color: colors.primary }]}>{t('home.donation.title')}</Text>
             <Text style={[commonStyles.textSecondary, { marginBottom: 16 }]}>
-              Votre contribution nous aide à construire un Mali meilleur
+              {t('home.donation.subtitle')}
             </Text>
             <Pressable 
               style={[buttonStyles.primary, { flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }]}
               onPress={handleDonation}
             >
               <IconSymbol name="heart.fill" size={20} color={colors.white} />
-              <Text style={[buttonStyles.text, { marginLeft: 8 }]}>Faire un don</Text>
+              <Text style={[buttonStyles.text, { marginLeft: 8 }]}>{t('home.donation.button')}</Text>
             </Pressable>
           </View>
 
           {/* Quick Actions */}
           <View style={[commonStyles.section, styles.actionsSection]}>
-            <Text style={[commonStyles.subtitle, { color: colors.primary, marginBottom: 16 }]}>Actions Rapides</Text>
+            <Text style={[commonStyles.subtitle, { color: colors.primary, marginBottom: 16 }]}>{t('home.actions.title')}</Text>
             <View style={styles.actionGrid}>
               <Link href="/membership" asChild>
                 <Pressable style={styles.actionCard}>
                   <View style={[styles.actionIcon, { backgroundColor: colors.primary }]}>
                     <IconSymbol name="person.badge.plus" size={28} color={colors.white} />
                   </View>
-                  <Text style={styles.actionTitle}>Adhérer</Text>
-                  <Text style={styles.actionDescription}>Rejoignez le parti</Text>
+                  <Text style={styles.actionTitle}>{t('home.action.join')}</Text>
+                  <Text style={styles.actionDescription}>{t('home.action.join.desc')}</Text>
                 </Pressable>
               </Link>
 
@@ -113,8 +135,8 @@ export default function HomeScreen() {
                   <View style={[styles.actionIcon, { backgroundColor: colors.accent }]}>
                     <IconSymbol name="calendar" size={28} color={colors.white} />
                   </View>
-                  <Text style={styles.actionTitle}>Événements</Text>
-                  <Text style={styles.actionDescription}>Nos activités</Text>
+                  <Text style={styles.actionTitle}>{t('home.action.events')}</Text>
+                  <Text style={styles.actionDescription}>{t('home.action.events.desc')}</Text>
                 </Pressable>
               </Link>
 
@@ -123,8 +145,8 @@ export default function HomeScreen() {
                   <View style={[styles.actionIcon, { backgroundColor: colors.highlight }]}>
                     <IconSymbol name="newspaper" size={28} color={colors.white} />
                   </View>
-                  <Text style={styles.actionTitle}>Actualités</Text>
-                  <Text style={styles.actionDescription}>Dernières nouvelles</Text>
+                  <Text style={styles.actionTitle}>{t('home.action.news')}</Text>
+                  <Text style={styles.actionDescription}>{t('home.action.news.desc')}</Text>
                 </Pressable>
               </Link>
 
@@ -133,8 +155,8 @@ export default function HomeScreen() {
                   <View style={[styles.actionIcon, { backgroundColor: colors.secondary }]}>
                     <IconSymbol name="envelope.fill" size={28} color={colors.black} />
                   </View>
-                  <Text style={styles.actionTitle}>Contact</Text>
-                  <Text style={styles.actionDescription}>Nous contacter</Text>
+                  <Text style={styles.actionTitle}>{t('home.action.contact')}</Text>
+                  <Text style={styles.actionDescription}>{t('home.action.contact.desc')}</Text>
                 </Pressable>
               </Link>
 
@@ -143,8 +165,8 @@ export default function HomeScreen() {
                   <View style={[styles.actionIcon, { backgroundColor: colors.accent }]}>
                     <IconSymbol name="bubble.left.and.bubble.right.fill" size={28} color={colors.white} />
                   </View>
-                  <Text style={styles.actionTitle}>Chat</Text>
-                  <Text style={styles.actionDescription}>Discussion publique</Text>
+                  <Text style={styles.actionTitle}>{t('home.action.chat')}</Text>
+                  <Text style={styles.actionDescription}>{t('home.action.chat.desc')}</Text>
                 </Pressable>
               </Link>
 
@@ -153,8 +175,8 @@ export default function HomeScreen() {
                   <View style={[styles.actionIcon, { backgroundColor: colors.highlight }]}>
                     <IconSymbol name="photo.fill" size={28} color={colors.white} />
                   </View>
-                  <Text style={styles.actionTitle}>Galerie</Text>
-                  <Text style={styles.actionDescription}>Photos & Vidéos</Text>
+                  <Text style={styles.actionTitle}>{t('home.action.gallery')}</Text>
+                  <Text style={styles.actionDescription}>{t('home.action.gallery.desc')}</Text>
                 </Pressable>
               </Link>
 
@@ -163,8 +185,8 @@ export default function HomeScreen() {
                   <View style={[styles.actionIcon, { backgroundColor: colors.primary }]}>
                     <IconSymbol name="map.fill" size={28} color={colors.white} />
                   </View>
-                  <Text style={styles.actionTitle}>Régions</Text>
-                  <Text style={styles.actionDescription}>Régions du Mali</Text>
+                  <Text style={styles.actionTitle}>{t('home.action.regions')}</Text>
+                  <Text style={styles.actionDescription}>{t('home.action.regions.desc')}</Text>
                 </Pressable>
               </Link>
 
@@ -173,8 +195,8 @@ export default function HomeScreen() {
                   <View style={[styles.actionIcon, { backgroundColor: colors.accent }]}>
                     <IconSymbol name="chart.bar.fill" size={28} color={colors.white} />
                   </View>
-                  <Text style={styles.actionTitle}>Tableau de bord</Text>
-                  <Text style={styles.actionDescription}>Vue d&apos;ensemble</Text>
+                  <Text style={styles.actionTitle}>{t('home.action.dashboard')}</Text>
+                  <Text style={styles.actionDescription}>{t('home.action.dashboard.desc')}</Text>
                 </Pressable>
               </Link>
 
@@ -183,8 +205,8 @@ export default function HomeScreen() {
                   <View style={[styles.actionIcon, { backgroundColor: colors.highlight }]}>
                     <IconSymbol name="video.fill" size={28} color={colors.white} />
                   </View>
-                  <Text style={styles.actionTitle}>Vidéoconférence</Text>
-                  <Text style={styles.actionDescription}>Réunions en ligne</Text>
+                  <Text style={styles.actionTitle}>{t('home.action.video')}</Text>
+                  <Text style={styles.actionDescription}>{t('home.action.video.desc')}</Text>
                 </Pressable>
               </Link>
 
@@ -193,8 +215,8 @@ export default function HomeScreen() {
                   <View style={[styles.actionIcon, { backgroundColor: '#1877F2' }]}>
                     <IconSymbol name="square.and.arrow.up.fill" size={28} color={colors.white} />
                   </View>
-                  <Text style={styles.actionTitle}>Partager</Text>
-                  <Text style={styles.actionDescription}>Partagez A.R.M</Text>
+                  <Text style={styles.actionTitle}>{t('home.action.share')}</Text>
+                  <Text style={styles.actionDescription}>{t('home.action.share.desc')}</Text>
                 </Pressable>
               </Link>
 
@@ -203,8 +225,8 @@ export default function HomeScreen() {
                   <View style={[styles.actionIcon, { backgroundColor: colors.success }]}>
                     <IconSymbol name="arrow.down.circle.fill" size={28} color={colors.white} />
                   </View>
-                  <Text style={styles.actionTitle}>Installer</Text>
-                  <Text style={styles.actionDescription}>Installer l&apos;app</Text>
+                  <Text style={styles.actionTitle}>{t('home.action.install')}</Text>
+                  <Text style={styles.actionDescription}>{t('home.action.install.desc')}</Text>
                 </Pressable>
               </Link>
 
@@ -213,8 +235,8 @@ export default function HomeScreen() {
                   <View style={[styles.actionIcon, { backgroundColor: '#10b981' }]}>
                     <IconSymbol name="checkmark.shield.fill" size={28} color={colors.white} />
                   </View>
-                  <Text style={styles.actionTitle}>Test Admin</Text>
-                  <Text style={styles.actionDescription}>Tester le mot de passe</Text>
+                  <Text style={styles.actionTitle}>{t('home.action.test')}</Text>
+                  <Text style={styles.actionDescription}>{t('home.action.test.desc')}</Text>
                 </Pressable>
               </Link>
 
@@ -223,8 +245,8 @@ export default function HomeScreen() {
                   <View style={[styles.actionIcon, { backgroundColor: colors.error }]}>
                     <IconSymbol name="lock.shield.fill" size={28} color={colors.white} />
                   </View>
-                  <Text style={styles.actionTitle}>Admin</Text>
-                  <Text style={styles.actionDescription}>Espace admin</Text>
+                  <Text style={styles.actionTitle}>{t('home.action.admin')}</Text>
+                  <Text style={styles.actionDescription}>{t('home.action.admin.desc')}</Text>
                 </Pressable>
               </Link>
             </View>
@@ -232,20 +254,20 @@ export default function HomeScreen() {
 
           {/* Party Info */}
           <View style={[commonStyles.section, styles.infoSection]}>
-            <Text style={[commonStyles.subtitle, { color: colors.primary }]}>Informations</Text>
+            <Text style={[commonStyles.subtitle, { color: colors.primary }]}>{t('home.info.title')}</Text>
             <View style={commonStyles.cardWhite}>
               <View style={styles.infoRow}>
                 <IconSymbol name="building.2" size={20} color={colors.primary} />
                 <View style={styles.infoContent}>
-                  <Text style={styles.infoLabel}>Siège</Text>
-                  <Text style={styles.infoText}>Rue 530, Porte 245, Sebenikoro, Bamako, Mali</Text>
+                  <Text style={styles.infoLabel}>{t('home.info.headquarters')}</Text>
+                  <Text style={styles.infoText}>{t('home.info.headquarters.address')}</Text>
                 </View>
               </View>
               <View style={styles.divider} />
               <View style={styles.infoRow}>
                 <IconSymbol name="phone.fill" size={20} color={colors.primary} />
                 <View style={styles.infoContent}>
-                  <Text style={styles.infoLabel}>Contact</Text>
+                  <Text style={styles.infoLabel}>{t('home.info.contact')}</Text>
                   <Text style={styles.infoText}>+223 76 30 48 69</Text>
                 </View>
               </View>
@@ -253,6 +275,11 @@ export default function HomeScreen() {
           </View>
         </ScrollView>
       </SafeAreaView>
+
+      <LanguageSelector 
+        visible={showLanguageSelector}
+        onClose={() => setShowLanguageSelector(false)}
+      />
     </>
   );
 }
@@ -266,6 +293,30 @@ const styles = StyleSheet.create({
   },
   scrollContentWithTabBar: {
     paddingBottom: 100,
+  },
+  languageButtonContainer: {
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 8,
+  },
+  languageButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.white,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    alignSelf: 'flex-end',
+    boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  languageButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.primary,
+    marginLeft: 6,
   },
   heroSection: {
     backgroundColor: colors.primary,

@@ -6,12 +6,14 @@ import { Stack } from "expo-router";
 import { IconSymbol } from "@/components/IconSymbol";
 import { colors, commonStyles } from "@/styles/commonStyles";
 import Animated, { FadeInDown, FadeIn } from 'react-native-reanimated';
+import { useLanguage } from "@/contexts/LanguageContext";
+import { LanguageSelector } from "@/components/LanguageSelector";
 
 const members = [
   {
     id: '1',
     name: 'Lassine Diakité',
-    role: 'Président',
+    roleKey: 'profile.role.president',
     profession: 'Entrepreneur',
     location: 'Avenida Castilla la Mancha 122, Yuncos, Toledo, Espagne',
     phone: '+34 632 60 71 01',
@@ -22,7 +24,7 @@ const members = [
   {
     id: '2',
     name: 'Dadou Sangare',
-    role: 'Premier Vice-Président',
+    roleKey: 'profile.role.vicepresident1',
     profession: '',
     location: 'Milan, Italie',
     phone: '',
@@ -33,7 +35,7 @@ const members = [
   {
     id: '3',
     name: 'Oumar Keita',
-    role: 'Deuxième Vice-Président',
+    roleKey: 'profile.role.vicepresident2',
     profession: 'Enseignant',
     location: 'Koutiala, Mali',
     phone: '+223 76 30 48 69',
@@ -44,7 +46,7 @@ const members = [
   {
     id: '4',
     name: 'Karifa Keita',
-    role: 'Secrétaire Général',
+    roleKey: 'profile.role.secretary',
     profession: 'Fonctionnaire d\'État',
     location: 'Bamako, Mali',
     phone: '+223 79 81 93 12',
@@ -55,7 +57,7 @@ const members = [
   {
     id: '5',
     name: 'Modibo Keita',
-    role: 'Secrétaire Administratif',
+    roleKey: 'profile.role.admin',
     profession: 'Gestionnaire',
     location: 'Sebenikoro, Bamako, Mali',
     phone: '+223 76 11 22 63',
@@ -66,7 +68,7 @@ const members = [
   {
     id: '6',
     name: 'Sokona Keita',
-    role: 'Trésorière',
+    roleKey: 'profile.role.treasurer',
     profession: 'Sage-femme',
     location: 'Sebenikoro, Bamako, Mali',
     phone: '+223 75 17 99 20',
@@ -77,7 +79,7 @@ const members = [
   {
     id: '7',
     name: 'Daouda Sangare',
-    role: 'Membre',
+    roleKey: 'profile.role.member',
     profession: '',
     location: 'Italie',
     phone: '+39 350 939 3002',
@@ -88,33 +90,35 @@ const members = [
 ];
 
 export default function ProfileScreen() {
+  const { t } = useLanguage();
   const [expandedMember, setExpandedMember] = useState<string | null>(null);
+  const [showLanguageSelector, setShowLanguageSelector] = useState(false);
 
   const handleCall = (phone: string, name: string) => {
     if (!phone) {
-      Alert.alert('Non disponible', 'Le numéro de téléphone n\'est pas disponible.');
+      Alert.alert(t('common.unavailable'), t('profile.error.noPhone'));
       return;
     }
     const phoneNumber = phone.replace(/\s/g, '');
     Linking.openURL(`tel:${phoneNumber}`).catch(() => {
-      Alert.alert('Erreur', 'Impossible d\'ouvrir l\'application téléphone.');
+      Alert.alert(t('common.error'), t('profile.error.cannotCall'));
     });
   };
 
   const handleMessage = (phone: string, name: string) => {
     if (!phone) {
-      Alert.alert('Non disponible', 'Le numéro de téléphone n\'est pas disponible.');
+      Alert.alert(t('common.unavailable'), t('profile.error.noPhone'));
       return;
     }
     const phoneNumber = phone.replace(/\s/g, '');
     Linking.openURL(`sms:${phoneNumber}`).catch(() => {
-      Alert.alert('Erreur', 'Impossible d\'ouvrir l\'application messages.');
+      Alert.alert(t('common.error'), t('profile.error.cannotMessage'));
     });
   };
 
   const handleEmail = (email: string, name: string) => {
     Linking.openURL(`mailto:${email}?subject=Contact depuis l'application ARM`).catch(() => {
-      Alert.alert('Erreur', 'Impossible d\'ouvrir l\'application email.');
+      Alert.alert(t('common.error'), t('profile.error.cannotEmail'));
     });
   };
 
@@ -127,11 +131,16 @@ export default function ProfileScreen() {
       {Platform.OS === 'ios' && (
         <Stack.Screen
           options={{
-            title: "Membres du Parti",
+            title: t('profile.title'),
             headerStyle: {
               backgroundColor: colors.primary,
             },
             headerTintColor: colors.white,
+            headerRight: () => (
+              <Pressable onPress={() => setShowLanguageSelector(true)} style={{ marginRight: 8 }}>
+                <IconSymbol name="globe" size={24} color={colors.white} />
+              </Pressable>
+            ),
           }}
         />
       )}
@@ -144,12 +153,25 @@ export default function ProfileScreen() {
           ]}
           showsVerticalScrollIndicator={false}
         >
+          {/* Language Selector Button for Android */}
+          {Platform.OS !== 'ios' && (
+            <View style={styles.languageButtonContainer}>
+              <Pressable 
+                style={styles.languageButton}
+                onPress={() => setShowLanguageSelector(true)}
+              >
+                <IconSymbol name="globe" size={20} color={colors.primary} />
+                <Text style={styles.languageButtonText}>{t('language.title')}</Text>
+              </Pressable>
+            </View>
+          )}
+
           <Animated.View entering={FadeIn.duration(600)} style={styles.header}>
             <Text style={[commonStyles.title, { color: colors.primary }]}>
-              Direction du Parti
+              {t('profile.header.title')}
             </Text>
             <Text style={[commonStyles.textSecondary, { textAlign: 'center' }]}>
-              Rencontrez les membres de notre équipe dirigeante
+              {t('profile.header.subtitle')}
             </Text>
           </Animated.View>
 
@@ -178,7 +200,7 @@ export default function ProfileScreen() {
                       />
                     </View>
                     <View style={[styles.roleBadge, { backgroundColor: colors.primary }]}>
-                      <Text style={styles.roleText}>{member.role}</Text>
+                      <Text style={styles.roleText}>{t(member.roleKey)}</Text>
                     </View>
                     
                     {member.profession ? (
@@ -208,7 +230,7 @@ export default function ProfileScreen() {
                         
                         {/* Contact Actions */}
                         <View style={styles.actionsContainer}>
-                          <Text style={styles.actionsTitle}>Actions rapides</Text>
+                          <Text style={styles.actionsTitle}>{t('profile.actions.title')}</Text>
                           <View style={styles.actionButtons}>
                             {member.phone && (
                               <>
@@ -217,7 +239,7 @@ export default function ProfileScreen() {
                                   onPress={() => handleCall(member.phone, member.name)}
                                 >
                                   <IconSymbol name="phone.fill" size={20} color={colors.white} />
-                                  <Text style={styles.actionButtonText}>Appeler</Text>
+                                  <Text style={styles.actionButtonText}>{t('profile.action.call')}</Text>
                                 </Pressable>
                                 
                                 <Pressable 
@@ -225,7 +247,7 @@ export default function ProfileScreen() {
                                   onPress={() => handleMessage(member.phone, member.name)}
                                 >
                                   <IconSymbol name="message.fill" size={20} color={colors.white} />
-                                  <Text style={styles.actionButtonText}>Message</Text>
+                                  <Text style={styles.actionButtonText}>{t('profile.action.message')}</Text>
                                 </Pressable>
                               </>
                             )}
@@ -235,7 +257,7 @@ export default function ProfileScreen() {
                               onPress={() => handleEmail(member.email, member.name)}
                             >
                               <IconSymbol name="envelope.fill" size={20} color={colors.white} />
-                              <Text style={styles.actionButtonText}>Email</Text>
+                              <Text style={styles.actionButtonText}>{t('profile.action.email')}</Text>
                             </Pressable>
                           </View>
                         </View>
@@ -261,28 +283,28 @@ export default function ProfileScreen() {
             style={[commonStyles.section, styles.valuesSection]}
           >
             <Text style={[commonStyles.subtitle, { color: colors.primary, textAlign: 'center' }]}>
-              Nos Valeurs
+              {t('profile.values.title')}
             </Text>
             <View style={styles.valuesContainer}>
               <View style={styles.valueCard}>
                 <IconSymbol name="heart.fill" size={32} color={colors.primary} />
-                <Text style={styles.valueTitle}>Fraternité</Text>
+                <Text style={styles.valueTitle}>{t('profile.value.fraternity')}</Text>
                 <Text style={styles.valueDescription}>
-                  L&apos;unité et la solidarité entre tous les Maliens
+                  {t('profile.value.fraternity.desc')}
                 </Text>
               </View>
               <View style={styles.valueCard}>
                 <IconSymbol name="hand.raised.fill" size={32} color={colors.accent} />
-                <Text style={styles.valueTitle}>Liberté</Text>
+                <Text style={styles.valueTitle}>{t('profile.value.liberty')}</Text>
                 <Text style={styles.valueDescription}>
-                  Le respect des droits et libertés fondamentales
+                  {t('profile.value.liberty.desc')}
                 </Text>
               </View>
               <View style={styles.valueCard}>
                 <IconSymbol name="equal.circle.fill" size={32} color={colors.secondary} />
-                <Text style={styles.valueTitle}>Égalité</Text>
+                <Text style={styles.valueTitle}>{t('profile.value.equality')}</Text>
                 <Text style={styles.valueDescription}>
-                  La justice et l&apos;équité pour tous les citoyens
+                  {t('profile.value.equality.desc')}
                 </Text>
               </View>
             </View>
@@ -294,19 +316,22 @@ export default function ProfileScreen() {
             style={[commonStyles.section, styles.headquartersSection]}
           >
             <Text style={[commonStyles.subtitle, { color: colors.primary, textAlign: 'center', marginBottom: 16 }]}>
-              Siège du Parti
+              {t('profile.headquarters.title')}
             </Text>
             <View style={styles.headquartersCard}>
               <IconSymbol name="building.2.fill" size={40} color={colors.primary} />
               <Text style={styles.headquartersAddress}>
-                Rue 530, Porte 245{'\n'}
-                Sebenikoro, Bamako{'\n'}
-                Mali
+                {t('profile.headquarters.address')}
               </Text>
             </View>
           </Animated.View>
         </ScrollView>
       </SafeAreaView>
+
+      <LanguageSelector 
+        visible={showLanguageSelector}
+        onClose={() => setShowLanguageSelector(false)}
+      />
     </>
   );
 }
@@ -320,6 +345,30 @@ const styles = StyleSheet.create({
   },
   scrollContentWithTabBar: {
     paddingBottom: 100,
+  },
+  languageButtonContainer: {
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 8,
+  },
+  languageButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.white,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    alignSelf: 'flex-end',
+    boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  languageButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.primary,
+    marginLeft: 6,
   },
   header: {
     alignItems: 'center',
