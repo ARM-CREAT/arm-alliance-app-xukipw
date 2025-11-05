@@ -1,7 +1,7 @@
 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+
 import { colors, commonStyles, buttonStyles } from '@/styles/commonStyles';
 import {
   View,
@@ -113,7 +113,6 @@ const styles = StyleSheet.create({
 });
 
 export default function AnalyticsScreen() {
-  const { isAdmin, isLoading } = useAuth();
   const { news, events, media } = useContent();
   const [analytics, setAnalytics] = useState<AnalyticsData>({
     totalMembers: 7,
@@ -129,21 +128,6 @@ export default function AnalyticsScreen() {
   });
 
   useEffect(() => {
-    if (!isLoading && !isAdmin) {
-      Alert.alert(
-        'Accès refusé',
-        'Vous devez être connecté en tant qu\'administrateur',
-        [
-          {
-            text: 'OK',
-            onPress: () => router.back(),
-          },
-        ]
-      );
-    }
-  }, [isAdmin, isLoading]);
-
-  useEffect(() => {
     setAnalytics(prev => ({
       ...prev,
       totalEvents: events.length,
@@ -156,25 +140,6 @@ export default function AnalyticsScreen() {
   const handleRefresh = () => {
     Alert.alert('Succès', 'Données actualisées');
   };
-
-  if (isLoading) {
-    return (
-      <SafeAreaView style={[commonStyles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-        <Text style={commonStyles.text}>Chargement...</Text>
-      </SafeAreaView>
-    );
-  }
-
-  if (!isAdmin) {
-    return (
-      <SafeAreaView style={commonStyles.container}>
-        <View style={styles.emptyState}>
-          <IconSymbol name="lock.fill" size={48} color={colors.textSecondary} />
-          <Text style={styles.emptyText}>Accès non autorisé</Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
 
   return (
     <>

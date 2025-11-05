@@ -10,7 +10,7 @@ import {
   TextInput,
   Alert,
 } from 'react-native';
-import { useAuth } from '@/contexts/AuthContext';
+
 import { colors, commonStyles, buttonStyles } from '@/styles/commonStyles';
 import { IconSymbol } from '@/components/IconSymbol';
 import { useContent, NewsItem } from '@/contexts/ContentContext';
@@ -105,7 +105,6 @@ const styles = StyleSheet.create({
 });
 
 export default function ManageNewsScreen() {
-  const { isAdmin } = useAuth();
   const { news, addNews, updateNews, deleteNews } = useContent();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
@@ -181,17 +180,6 @@ export default function ManageNewsScreen() {
       ]
     );
   };
-
-  if (!isAdmin) {
-    return (
-      <SafeAreaView style={commonStyles.container}>
-        <View style={styles.emptyState}>
-          <IconSymbol name="lock.fill" size={48} color={colors.textSecondary} />
-          <Text style={styles.emptyText}>Accès non autorisé</Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
 
   return (
     <>

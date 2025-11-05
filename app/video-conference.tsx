@@ -15,7 +15,7 @@ import { Stack, router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, commonStyles, buttonStyles } from '@/styles/commonStyles';
 import { IconSymbol } from '@/components/IconSymbol';
-import { useAuth } from '@/contexts/AuthContext';
+
 import { WebView } from 'react-native-webview';
 
 interface Conference {
@@ -27,7 +27,6 @@ interface Conference {
 }
 
 export default function VideoConferenceScreen() {
-  const { isAdmin } = useAuth();
   const [conferences, setConferences] = useState<Conference[]>([]);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [conferenceTitle, setConferenceTitle] = useState('');
@@ -210,9 +209,8 @@ export default function VideoConferenceScreen() {
             </View>
           </View>
 
-          {/* Create Conference Section (Admin Only) */}
-          {isAdmin && (
-            <View style={commonStyles.section}>
+          {/* Create Conference Section */}
+          <View style={commonStyles.section}>
               <Text style={[commonStyles.subtitle, { color: colors.primary }]}>
                 Créer une Conférence
               </Text>
@@ -255,7 +253,7 @@ export default function VideoConferenceScreen() {
                 </View>
               )}
             </View>
-          )}
+          </View>
 
           {/* Active Conferences */}
           {conferences.length > 0 && (

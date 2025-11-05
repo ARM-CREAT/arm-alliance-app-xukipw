@@ -11,7 +11,6 @@ import {
   Image,
 } from 'react-native';
 import { useContent, MemberItem } from '@/contexts/ContentContext';
-import { useAuth } from '@/contexts/AuthContext';
 import { Stack, router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { IconSymbol } from '@/components/IconSymbol';
@@ -28,7 +27,6 @@ const roleOptions = [
 ];
 
 export default function ManageMembersScreen() {
-  const { isAdmin, isLoading: authLoading } = useAuth();
   const { members, addMember, updateMember, deleteMember } = useContent();
   
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -42,13 +40,6 @@ export default function ManageMembersScreen() {
   const [image, setImage] = useState('');
   const [order, setOrder] = useState('');
   const [showRolePicker, setShowRolePicker] = useState(false);
-
-  React.useEffect(() => {
-    if (!authLoading && !isAdmin) {
-      Alert.alert('Accès refusé', 'Vous devez être administrateur pour accéder à cette page.');
-      router.back();
-    }
-  }, [isAdmin, authLoading]);
 
   const resetForm = () => {
     setEditingId(null);
@@ -146,20 +137,6 @@ export default function ManageMembersScreen() {
       ]
     );
   };
-
-  if (authLoading) {
-    return (
-      <SafeAreaView style={commonStyles.container}>
-        <View style={styles.loadingContainer}>
-          <Text style={commonStyles.text}>Chargement...</Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
-  if (!isAdmin) {
-    return null;
-  }
 
   const selectedRole = roleOptions.find(r => r.key === roleKey);
 
@@ -419,11 +396,6 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingBottom: 40,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   form: {
     marginTop: 16,

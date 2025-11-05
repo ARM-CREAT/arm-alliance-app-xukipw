@@ -1,7 +1,6 @@
 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
 import { colors, commonStyles, buttonStyles } from '@/styles/commonStyles';
 import {
   View,
@@ -130,7 +129,6 @@ const styles = StyleSheet.create({
 });
 
 export default function ManageMediaScreen() {
-  const { isAdmin } = useAuth();
   const { media, addMedia, deleteMedia } = useContent();
   const [formData, setFormData] = useState({
     title: '',
@@ -188,17 +186,6 @@ export default function ManageMediaScreen() {
       ]
     );
   };
-
-  if (!isAdmin) {
-    return (
-      <SafeAreaView style={commonStyles.container}>
-        <View style={styles.emptyState}>
-          <IconSymbol name="lock.fill" size={48} color={colors.textSecondary} />
-          <Text style={styles.emptyText}>Accès non autorisé</Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
 
   return (
     <>

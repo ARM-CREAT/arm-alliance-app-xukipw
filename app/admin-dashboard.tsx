@@ -1,15 +1,13 @@
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import {
   View,
   Text,
   ScrollView,
   Pressable,
   StyleSheet,
-  Alert,
   Platform,
 } from 'react-native';
-import { useAuth } from '@/contexts/AuthContext';
 import { Stack, router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useContent } from '@/contexts/ContentContext';
@@ -76,56 +74,12 @@ const adminMenuItems = [
 ];
 
 export default function AdminDashboardScreen() {
-  const { isAdmin, logout, isLoading } = useAuth();
   const { news, events, media, members, refreshContent } = useContent();
-
-  useEffect(() => {
-    console.log('AdminDashboard - isAdmin:', isAdmin, 'isLoading:', isLoading);
-    if (!isLoading && !isAdmin) {
-      console.log('Not admin, redirecting to login');
-      Alert.alert('Accès refusé', 'Vous devez être connecté en tant qu\'administrateur.');
-      router.replace('/admin-login');
-    }
-  }, [isAdmin, isLoading]);
-
-  const handleLogout = async () => {
-    Alert.alert(
-      'Déconnexion',
-      'Êtes-vous sûr de vouloir vous déconnecter ?',
-      [
-        { text: 'Annuler', style: 'cancel' },
-        {
-          text: 'Déconnexion',
-          style: 'destructive',
-          onPress: async () => {
-            console.log('Logging out...');
-            await logout();
-            router.replace('/admin-login');
-          },
-        },
-      ]
-    );
-  };
 
   const handleRefresh = async () => {
     console.log('Refreshing content...');
     await refreshContent();
-    Alert.alert('Succès', 'Contenu actualisé');
   };
-
-  if (isLoading) {
-    return (
-      <SafeAreaView style={commonStyles.container}>
-        <View style={styles.loadingContainer}>
-          <Text style={commonStyles.text}>Chargement...</Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
-  if (!isAdmin) {
-    return null;
-  }
 
   return (
     <>
@@ -139,11 +93,6 @@ export default function AdminDashboardScreen() {
           headerLeft: () => (
             <Pressable onPress={() => router.back()} style={{ marginLeft: 8 }}>
               <IconSymbol name="chevron.left" size={24} color={colors.white} />
-            </Pressable>
-          ),
-          headerRight: () => (
-            <Pressable onPress={handleLogout} style={{ marginRight: 8 }}>
-              <IconSymbol name="rectangle.portrait.and.arrow.right" size={24} color={colors.white} />
             </Pressable>
           ),
         }}
@@ -218,14 +167,6 @@ export default function AdminDashboardScreen() {
               <IconSymbol name="arrow.clockwise" size={20} color={colors.white} />
               <Text style={buttonStyles.secondaryText}>Actualiser le contenu</Text>
             </Pressable>
-
-            <Pressable
-              style={[buttonStyles.primary, { backgroundColor: colors.error }]}
-              onPress={handleLogout}
-            >
-              <IconSymbol name="rectangle.portrait.and.arrow.right" size={20} color={colors.white} />
-              <Text style={buttonStyles.primaryText}>Déconnexion</Text>
-            </Pressable>
           </View>
         </ScrollView>
       </SafeAreaView>
@@ -239,11 +180,6 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingBottom: 40,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   welcomeCard: {
     backgroundColor: colors.white,

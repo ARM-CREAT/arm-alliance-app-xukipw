@@ -11,21 +11,9 @@ import { Stack, router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, commonStyles, buttonStyles } from '@/styles/commonStyles';
 import { IconSymbol } from '@/components/IconSymbol';
-import { useAuth } from '@/contexts/AuthContext';
+
 
 export default function AdminGuideScreen() {
-  const { isAdmin } = useAuth();
-
-  React.useEffect(() => {
-    if (!isAdmin) {
-      router.replace('/admin-login');
-    }
-  }, [isAdmin]);
-
-  if (!isAdmin) {
-    return null;
-  }
-
   return (
     <>
       <Stack.Screen
@@ -48,45 +36,10 @@ export default function AdminGuideScreen() {
             </Text>
           </View>
 
-          {/* Section 1: Connexion */}
+          {/* Section 1: Tableau de Bord */}
           <View style={commonStyles.section}>
             <View style={styles.sectionHeader}>
               <IconSymbol name="1.circle.fill" size={32} color={colors.primary} />
-              <Text style={styles.sectionTitle}>Connexion Administrateur</Text>
-            </View>
-            <View style={styles.card}>
-              <Text style={styles.stepTitle}>Comment se connecter :</Text>
-              <View style={styles.step}>
-                <Text style={styles.stepNumber}>1.</Text>
-                <Text style={styles.stepText}>
-                  Accédez à l&apos;écran de connexion via le bouton &quot;Admin&quot; sur la page d&apos;accueil
-                </Text>
-              </View>
-              <View style={styles.step}>
-                <Text style={styles.stepNumber}>2.</Text>
-                <Text style={styles.stepText}>
-                  Entrez le mot de passe administrateur : <Text style={styles.password}>ARM2024Admin!</Text>
-                </Text>
-              </View>
-              <View style={styles.step}>
-                <Text style={styles.stepNumber}>3.</Text>
-                <Text style={styles.stepText}>
-                  Cliquez sur &quot;Se connecter&quot; pour accéder au tableau de bord
-                </Text>
-              </View>
-              <View style={styles.infoBox}>
-                <IconSymbol name="exclamationmark.triangle.fill" size={20} color={colors.accent} />
-                <Text style={styles.infoText}>
-                  Important : Gardez ce mot de passe confidentiel et ne le partagez qu&apos;avec les administrateurs autorisés.
-                </Text>
-              </View>
-            </View>
-          </View>
-
-          {/* Section 2: Tableau de Bord */}
-          <View style={commonStyles.section}>
-            <View style={styles.sectionHeader}>
-              <IconSymbol name="2.circle.fill" size={32} color={colors.primary} />
               <Text style={styles.sectionTitle}>Tableau de Bord</Text>
             </View>
             <View style={styles.card}>
@@ -123,10 +76,10 @@ export default function AdminGuideScreen() {
             </View>
           </View>
 
-          {/* Section 3: Gestion des Actualités */}
+          {/* Section 2: Gestion des Actualités */}
           <View style={commonStyles.section}>
             <View style={styles.sectionHeader}>
-              <IconSymbol name="3.circle.fill" size={32} color={colors.primary} />
+              <IconSymbol name="2.circle.fill" size={32} color={colors.primary} />
               <Text style={styles.sectionTitle}>Gérer les Actualités</Text>
             </View>
             <View style={styles.card}>
@@ -165,10 +118,10 @@ export default function AdminGuideScreen() {
             </View>
           </View>
 
-          {/* Section 4: Gestion des Événements */}
+          {/* Section 3: Gestion des Événements */}
           <View style={commonStyles.section}>
             <View style={styles.sectionHeader}>
-              <IconSymbol name="4.circle.fill" size={32} color={colors.primary} />
+              <IconSymbol name="3.circle.fill" size={32} color={colors.primary} />
               <Text style={styles.sectionTitle}>Gérer les Événements</Text>
             </View>
             <View style={styles.card}>
@@ -200,10 +153,10 @@ export default function AdminGuideScreen() {
             </View>
           </View>
 
-          {/* Section 5: Gestion des Médias */}
+          {/* Section 4: Gestion des Médias */}
           <View style={commonStyles.section}>
             <View style={styles.sectionHeader}>
-              <IconSymbol name="5.circle.fill" size={32} color={colors.primary} />
+              <IconSymbol name="4.circle.fill" size={32} color={colors.primary} />
               <Text style={styles.sectionTitle}>Gérer les Médias</Text>
             </View>
             <View style={styles.card}>
@@ -235,10 +188,10 @@ export default function AdminGuideScreen() {
             </View>
           </View>
 
-          {/* Section 6: Vidéo Conférence */}
+          {/* Section 5: Vidéo Conférence */}
           <View style={commonStyles.section}>
             <View style={styles.sectionHeader}>
-              <IconSymbol name="6.circle.fill" size={32} color={colors.primary} />
+              <IconSymbol name="5.circle.fill" size={32} color={colors.primary} />
               <Text style={styles.sectionTitle}>Vidéo Conférence</Text>
             </View>
             <View style={styles.card}>
@@ -270,35 +223,35 @@ export default function AdminGuideScreen() {
             </View>
           </View>
 
-          {/* Section 7: Sécurité */}
+          {/* Section 6: Informations Importantes */}
           <View style={commonStyles.section}>
             <View style={styles.sectionHeader}>
-              <IconSymbol name="lock.shield.fill" size={32} color={colors.error} />
-              <Text style={styles.sectionTitle}>Sécurité</Text>
+              <IconSymbol name="info.circle.fill" size={32} color={colors.primary} />
+              <Text style={styles.sectionTitle}>Informations Importantes</Text>
             </View>
             <View style={[styles.card, { backgroundColor: colors.card }]}>
               <View style={styles.securityItem}>
                 <IconSymbol name="checkmark.circle.fill" size={24} color={colors.success} />
                 <Text style={styles.securityText}>
-                  Seul l&apos;administrateur peut modifier le contenu
-                </Text>
-              </View>
-              <View style={styles.securityItem}>
-                <IconSymbol name="checkmark.circle.fill" size={24} color={colors.success} />
-                <Text style={styles.securityText}>
-                  Le mot de passe est stocké de manière sécurisée
-                </Text>
-              </View>
-              <View style={styles.securityItem}>
-                <IconSymbol name="checkmark.circle.fill" size={24} color={colors.success} />
-                <Text style={styles.securityText}>
-                  Déconnectez-vous toujours après utilisation
+                  Toutes les fonctionnalités d&apos;administration sont accessibles directement
                 </Text>
               </View>
               <View style={styles.securityItem}>
                 <IconSymbol name="checkmark.circle.fill" size={24} color={colors.success} />
                 <Text style={styles.securityText}>
                   Les modifications sont sauvegardées automatiquement
+                </Text>
+              </View>
+              <View style={styles.securityItem}>
+                <IconSymbol name="checkmark.circle.fill" size={24} color={colors.success} />
+                <Text style={styles.securityText}>
+                  Le contenu est stocké localement sur l&apos;appareil
+                </Text>
+              </View>
+              <View style={styles.securityItem}>
+                <IconSymbol name="checkmark.circle.fill" size={24} color={colors.success} />
+                <Text style={styles.securityText}>
+                  Utilisez le bouton &quot;Actualiser&quot; pour recharger le contenu
                 </Text>
               </View>
             </View>
