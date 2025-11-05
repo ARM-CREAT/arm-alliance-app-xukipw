@@ -105,6 +105,21 @@ const translations: Record<Language, Record<string, string>> = {
     'profile.error.cannotMessage': 'Impossible d\'ouvrir l\'application messages.',
     'profile.error.cannotEmail': 'Impossible d\'ouvrir l\'application email.',
     
+    // Contact Screen
+    'contact.title': 'Contactez-nous',
+    'contact.subtitle': 'Nous sommes à votre écoute',
+    'contact.form.title': 'Envoyez-nous un message',
+    'contact.form.name': 'Nom',
+    'contact.form.email': 'Email',
+    'contact.form.phone': 'Téléphone',
+    'contact.form.subject': 'Sujet',
+    'contact.form.message': 'Message',
+    'contact.form.send': 'Envoyer le message',
+    'contact.form.cancel': 'Annuler',
+    'contact.form.required': 'Veuillez remplir tous les champs obligatoires',
+    'contact.form.success': 'Merci pour votre message! Nous vous répondrons dans les plus brefs délais.',
+    'contact.quickActions': 'Actions rapides',
+    
     // Donations
     'donations.title': 'Faire un Don',
     'donations.subtitle': 'Soutenez notre mouvement pour un Mali meilleur',
@@ -255,6 +270,21 @@ const translations: Record<Language, Record<string, string>> = {
     'profile.error.cannotCall': 'Cannot open phone application.',
     'profile.error.cannotMessage': 'Cannot open messaging application.',
     'profile.error.cannotEmail': 'Cannot open email application.',
+    
+    // Contact Screen
+    'contact.title': 'Contact Us',
+    'contact.subtitle': 'We are here to listen',
+    'contact.form.title': 'Send us a message',
+    'contact.form.name': 'Name',
+    'contact.form.email': 'Email',
+    'contact.form.phone': 'Phone',
+    'contact.form.subject': 'Subject',
+    'contact.form.message': 'Message',
+    'contact.form.send': 'Send message',
+    'contact.form.cancel': 'Cancel',
+    'contact.form.required': 'Please fill in all required fields',
+    'contact.form.success': 'Thank you for your message! We will respond as soon as possible.',
+    'contact.quickActions': 'Quick actions',
     
     // Donations
     'donations.title': 'Make a Donation',
@@ -407,6 +437,21 @@ const translations: Record<Language, Record<string, string>> = {
     'profile.error.cannotMessage': 'No se puede abrir la aplicación de mensajes.',
     'profile.error.cannotEmail': 'No se puede abrir la aplicación de correo.',
     
+    // Contact Screen
+    'contact.title': 'Contáctanos',
+    'contact.subtitle': 'Estamos aquí para escucharte',
+    'contact.form.title': 'Envíanos un mensaje',
+    'contact.form.name': 'Nombre',
+    'contact.form.email': 'Email',
+    'contact.form.phone': 'Teléfono',
+    'contact.form.subject': 'Asunto',
+    'contact.form.message': 'Mensaje',
+    'contact.form.send': 'Enviar mensaje',
+    'contact.form.cancel': 'Cancelar',
+    'contact.form.required': 'Por favor complete todos los campos requeridos',
+    'contact.form.success': '¡Gracias por tu mensaje! Responderemos lo antes posible.',
+    'contact.quickActions': 'Acciones rápidas',
+    
     // Donations
     'donations.title': 'Hacer una Donación',
     'donations.subtitle': 'Apoya nuestro movimiento por un Malí mejor',
@@ -557,6 +602,21 @@ const translations: Record<Language, Record<string, string>> = {
     'profile.error.cannotCall': 'Telefɔni porogaramu dabɔ tɛ se ka kɛ.',
     'profile.error.cannotMessage': 'Cikan porogaramu dabɔ tɛ se ka kɛ.',
     'profile.error.cannotEmail': 'Bataki porogaramu dabɔ tɛ se ka kɛ.',
+    
+    // Contact Screen
+    'contact.title': 'An sɔrɔ',
+    'contact.subtitle': 'An bɛ yen ka i mɛn',
+    'contact.form.title': 'Cikan ci an ma',
+    'contact.form.name': 'Tɔgɔ',
+    'contact.form.email': 'Bataki',
+    'contact.form.phone': 'Telefɔni',
+    'contact.form.subject': 'Kunnafoni',
+    'contact.form.message': 'Cikan',
+    'contact.form.send': 'Cikan ci',
+    'contact.form.cancel': 'Bali',
+    'contact.form.required': 'I ka kan ka yɔrɔw bɛɛ fa',
+    'contact.form.success': 'I ni ce i ka cikan kama! An bɛna jaabi di teliya la.',
+    'contact.quickActions': 'Baara teliyaw',
     
     // Donations
     'donations.title': 'Dɛmɛ Di',

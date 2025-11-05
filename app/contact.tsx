@@ -1,12 +1,14 @@
 
 import React, { useState } from "react";
-import { ScrollView, StyleSheet, View, Text, TextInput, Pressable, Alert } from "react-native";
+import { ScrollView, StyleSheet, View, Text, TextInput, Pressable, Alert, Linking } from "react-native";
 import { Stack, router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { IconSymbol } from "@/components/IconSymbol";
 import { colors, commonStyles, buttonStyles } from "@/styles/commonStyles";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function ContactScreen() {
+  const { t } = useLanguage();
   const [formData, setFormData] = useState({
     nom: '',
     email: '',
@@ -17,12 +19,12 @@ export default function ContactScreen() {
 
   const handleSubmit = () => {
     if (!formData.nom || !formData.email || !formData.message) {
-      Alert.alert("Erreur", "Veuillez remplir tous les champs obligatoires");
+      Alert.alert(t('common.error'), "Veuillez remplir tous les champs obligatoires");
       return;
     }
 
     Alert.alert(
-      "Message envoyé",
+      t('common.success'),
       "Merci pour votre message! Nous vous répondrons dans les plus brefs délais.",
       [
         {
@@ -33,11 +35,55 @@ export default function ContactScreen() {
     );
   };
 
+  const handleCall = (phone: string) => {
+    const phoneNumber = phone.replace(/\s/g, '');
+    Linking.canOpenURL(`tel:${phoneNumber}`)
+      .then((supported) => {
+        if (supported) {
+          return Linking.openURL(`tel:${phoneNumber}`);
+        } else {
+          Alert.alert(t('common.error'), t('profile.error.cannotCall'));
+        }
+      })
+      .catch(() => {
+        Alert.alert(t('common.error'), t('profile.error.cannotCall'));
+      });
+  };
+
+  const handleMessage = (phone: string) => {
+    const phoneNumber = phone.replace(/\s/g, '');
+    Linking.canOpenURL(`sms:${phoneNumber}`)
+      .then((supported) => {
+        if (supported) {
+          return Linking.openURL(`sms:${phoneNumber}`);
+        } else {
+          Alert.alert(t('common.error'), t('profile.error.cannotMessage'));
+        }
+      })
+      .catch(() => {
+        Alert.alert(t('common.error'), t('profile.error.cannotMessage'));
+      });
+  };
+
+  const handleEmail = (email: string) => {
+    Linking.canOpenURL(`mailto:${email}`)
+      .then((supported) => {
+        if (supported) {
+          return Linking.openURL(`mailto:${email}?subject=Contact depuis l'application ARM`);
+        } else {
+          Alert.alert(t('common.error'), t('profile.error.cannotEmail'));
+        }
+      })
+      .catch(() => {
+        Alert.alert(t('common.error'), t('profile.error.cannotEmail'));
+      });
+  };
+
   return (
     <>
       <Stack.Screen
         options={{
-          title: "Contact",
+          title: t('nav.contact'),
           headerStyle: {
             backgroundColor: colors.primary,
           },
@@ -54,21 +100,21 @@ export default function ContactScreen() {
           <View style={styles.header}>
             <IconSymbol name="envelope.fill" size={48} color={colors.secondary} />
             <Text style={[commonStyles.title, { color: colors.primary, marginTop: 16 }]}>
-              Contactez-nous
+              {t('nav.contact')}
             </Text>
             <Text style={[commonStyles.textSecondary, { textAlign: 'center' }]}>
               Nous sommes à votre écoute
             </Text>
           </View>
 
-          {/* Contact Info Cards */}
+          {/* Contact Info Cards with Action Buttons */}
           <View style={commonStyles.section}>
             <View style={styles.contactCard}>
               <View style={[styles.contactIcon, { backgroundColor: colors.primary }]}>
                 <IconSymbol name="building.2" size={24} color={colors.white} />
               </View>
               <View style={styles.contactInfo}>
-                <Text style={styles.contactLabel}>Siège</Text>
+                <Text style={styles.contactLabel}>{t('profile.headquarters.title')}</Text>
                 <Text style={styles.contactText}>Rue 530, Porte 245</Text>
                 <Text style={styles.contactText}>Sebenikoro, Bamako, Mali</Text>
               </View>
@@ -79,9 +125,43 @@ export default function ContactScreen() {
                 <IconSymbol name="phone.fill" size={24} color={colors.white} />
               </View>
               <View style={styles.contactInfo}>
-                <Text style={styles.contactLabel}>Téléphone</Text>
-                <Text style={styles.contactText}>+223 76 30 48 69</Text>
-                <Text style={styles.contactText}>+34 632 60 71 01</Text>
+                <Text style={styles.contactLabel}>{t('home.info.contact')}</Text>
+                <Pressable onPress={() => handleCall('+223 76 30 48 69')}>
+                  <Text style={[styles.contactText, styles.contactLink]}>+223 76 30 48 69</Text>
+                </Pressable>
+                <Pressable onPress={() => handleCall('+34 632 60 71 01')}>
+                  <Text style={[styles.contactText, styles.contactLink]}>+34 632 60 71 01</Text>
+                </Pressable>
+              </View>
+            </View>
+
+            {/* Quick Action Buttons */}
+            <View style={styles.quickActionsContainer}>
+              <Text style={styles.quickActionsTitle}>{t('profile.actions.title')}</Text>
+              <View style={styles.quickActions}>
+                <Pressable 
+                  style={[styles.quickActionButton, { backgroundColor: colors.primary }]}
+                  onPress={() => handleCall('+223 76 30 48 69')}
+                >
+                  <IconSymbol name="phone.fill" size={20} color={colors.white} />
+                  <Text style={styles.quickActionText}>{t('profile.action.call')}</Text>
+                </Pressable>
+
+                <Pressable 
+                  style={[styles.quickActionButton, { backgroundColor: colors.accent }]}
+                  onPress={() => handleMessage('+223 76 30 48 69')}
+                >
+                  <IconSymbol name="message.fill" size={20} color={colors.white} />
+                  <Text style={styles.quickActionText}>{t('profile.action.message')}</Text>
+                </Pressable>
+
+                <Pressable 
+                  style={[styles.quickActionButton, { backgroundColor: colors.secondary }]}
+                  onPress={() => handleEmail('contact@arm-mali.org')}
+                >
+                  <IconSymbol name="envelope.fill" size={20} color={colors.white} />
+                  <Text style={styles.quickActionText}>{t('profile.action.email')}</Text>
+                </Pressable>
               </View>
             </View>
           </View>
@@ -203,5 +283,46 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.textSecondary,
     lineHeight: 20,
+  },
+  contactLink: {
+    color: colors.primary,
+    fontWeight: '600',
+    textDecorationLine: 'underline',
+  },
+  quickActionsContainer: {
+    backgroundColor: colors.white,
+    borderRadius: 12,
+    padding: 16,
+    marginTop: 8,
+    borderWidth: 1,
+    borderColor: colors.border,
+    boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
+    elevation: 2,
+  },
+  quickActionsTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: colors.text,
+    marginBottom: 12,
+  },
+  quickActions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  quickActionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
+    elevation: 2,
+  },
+  quickActionText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.white,
   },
 });
