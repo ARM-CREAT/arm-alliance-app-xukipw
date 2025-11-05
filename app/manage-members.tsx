@@ -369,9 +369,9 @@ export default function ManageMembersScreen() {
             {members.map((member) => (
               <View key={member.id} style={styles.memberCard}>
                 <Image 
-                  source={{ uri: member.image }} 
+                  source={require('@/assets/images/031bc733-c270-4f68-a82f-7339c4bdef87.jpeg')}
                   style={styles.memberImage}
-                  resizeMode="cover"
+                  resizeMode="contain"
                 />
                 <View style={styles.memberInfo}>
                   <View style={styles.memberHeader}>
