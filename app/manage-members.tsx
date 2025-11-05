@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -11,6 +11,7 @@ import {
   Image,
 } from 'react-native';
 import { useContent, MemberItem } from '@/contexts/ContentContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { Stack, router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { IconSymbol } from '@/components/IconSymbol';
@@ -28,6 +29,7 @@ const roleOptions = [
 
 export default function ManageMembersScreen() {
   const { members, addMember, updateMember, deleteMember } = useContent();
+  const { checkAuth } = useAuth();
   
   const [editingId, setEditingId] = useState<string | null>(null);
   const [name, setName] = useState('');
@@ -40,6 +42,25 @@ export default function ManageMembersScreen() {
   const [image, setImage] = useState('');
   const [order, setOrder] = useState('');
   const [showRolePicker, setShowRolePicker] = useState(false);
+
+  useEffect(() => {
+    const verifyAuth = async () => {
+      const authenticated = await checkAuth();
+      if (!authenticated) {
+        Alert.alert(
+          'Accès refusé',
+          'Vous devez vous connecter pour accéder à cette page',
+          [
+            {
+              text: 'OK',
+              onPress: () => router.replace('/admin-login'),
+            },
+          ]
+        );
+      }
+    };
+    verifyAuth();
+  }, []);
 
   const resetForm = () => {
     setEditingId(null);

@@ -1,6 +1,6 @@
 
 import { SafeAreaView } from 'react-native-safe-area-context';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -13,6 +13,7 @@ import {
 
 import { colors, commonStyles, buttonStyles } from '@/styles/commonStyles';
 import { useContent, EventItem } from '@/contexts/ContentContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { IconSymbol } from '@/components/IconSymbol';
 import { Stack, router } from 'expo-router';
 
@@ -106,6 +107,7 @@ const styles = StyleSheet.create({
 
 export default function ManageEventsScreen() {
   const { events, addEvent, updateEvent, deleteEvent } = useContent();
+  const { checkAuth } = useAuth();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     title: '',
@@ -114,6 +116,25 @@ export default function ManageEventsScreen() {
     location: '',
     type: 'meeting',
   });
+
+  useEffect(() => {
+    const verifyAuth = async () => {
+      const authenticated = await checkAuth();
+      if (!authenticated) {
+        Alert.alert(
+          'Accès refusé',
+          'Vous devez vous connecter pour accéder à cette page',
+          [
+            {
+              text: 'OK',
+              onPress: () => router.replace('/admin-login'),
+            },
+          ]
+        );
+      }
+    };
+    verifyAuth();
+  }, []);
 
   const resetForm = () => {
     setFormData({

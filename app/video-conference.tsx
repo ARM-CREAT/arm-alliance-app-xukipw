@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -15,6 +15,7 @@ import { Stack, router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, commonStyles, buttonStyles } from '@/styles/commonStyles';
 import { IconSymbol } from '@/components/IconSymbol';
+import { useAuth } from '@/contexts/AuthContext';
 
 import { WebView } from 'react-native-webview';
 
@@ -27,11 +28,31 @@ interface Conference {
 }
 
 export default function VideoConferenceScreen() {
+  const { checkAuth } = useAuth();
   const [conferences, setConferences] = useState<Conference[]>([]);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [conferenceTitle, setConferenceTitle] = useState('');
   const [joinKey, setJoinKey] = useState('');
   const [activeConference, setActiveConference] = useState<Conference | null>(null);
+
+  useEffect(() => {
+    const verifyAuth = async () => {
+      const authenticated = await checkAuth();
+      if (!authenticated) {
+        Alert.alert(
+          'Accès refusé',
+          'Vous devez vous connecter pour accéder à cette page',
+          [
+            {
+              text: 'OK',
+              onPress: () => router.replace('/admin-login'),
+            },
+          ]
+        );
+      }
+    };
+    verifyAuth();
+  }, []);
 
   const generateKey = () => {
     return Math.random().toString(36).substring(2, 10).toUpperCase();

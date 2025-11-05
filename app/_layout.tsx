@@ -19,6 +19,7 @@ import { Button } from "@/components/button";
 import { WidgetProvider } from "@/contexts/WidgetContext";
 import { ContentProvider } from "@/contexts/ContentContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
+import { AuthProvider } from "@/contexts/AuthContext";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -86,13 +87,28 @@ export default function RootLayout() {
         <ThemeProvider
           value={colorScheme === "dark" ? CustomDarkTheme : CustomDefaultTheme}
         >
-          <LanguageProvider>
-            <ContentProvider>
-              <WidgetProvider>
-                <GestureHandlerRootView>
+          <AuthProvider>
+            <LanguageProvider>
+              <ContentProvider>
+                <WidgetProvider>
+                  <GestureHandlerRootView>
                 <Stack>
                   {/* Main app with tabs */}
                   <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+
+                  {/* Auth screens */}
+                  <Stack.Screen
+                    name="admin-login"
+                    options={{
+                      headerShown: false,
+                    }}
+                  />
+                  <Stack.Screen
+                    name="test-password"
+                    options={{
+                      headerShown: false,
+                    }}
+                  />
 
                   {/* Admin screens */}
                   <Stack.Screen
@@ -238,11 +254,12 @@ export default function RootLayout() {
                     }}
                   />
                 </Stack>
-                <SystemBars style={"auto"} />
-                </GestureHandlerRootView>
-              </WidgetProvider>
-            </ContentProvider>
-          </LanguageProvider>
+                  <SystemBars style={"auto"} />
+                  </GestureHandlerRootView>
+                </WidgetProvider>
+              </ContentProvider>
+            </LanguageProvider>
+          </AuthProvider>
         </ThemeProvider>
     </>
   );

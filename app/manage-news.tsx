@@ -1,6 +1,6 @@
 
 import { SafeAreaView } from 'react-native-safe-area-context';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -14,6 +14,7 @@ import {
 import { colors, commonStyles, buttonStyles } from '@/styles/commonStyles';
 import { IconSymbol } from '@/components/IconSymbol';
 import { useContent, NewsItem } from '@/contexts/ContentContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { Stack, router } from 'expo-router';
 
 const styles = StyleSheet.create({
@@ -106,6 +107,7 @@ const styles = StyleSheet.create({
 
 export default function ManageNewsScreen() {
   const { news, addNews, updateNews, deleteNews } = useContent();
+  const { checkAuth } = useAuth();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     title: '',
@@ -114,6 +116,25 @@ export default function ManageNewsScreen() {
     date: new Date().toISOString().split('T')[0],
     image: '',
   });
+
+  useEffect(() => {
+    const verifyAuth = async () => {
+      const authenticated = await checkAuth();
+      if (!authenticated) {
+        Alert.alert(
+          'Accès refusé',
+          'Vous devez vous connecter pour accéder à cette page',
+          [
+            {
+              text: 'OK',
+              onPress: () => router.replace('/admin-login'),
+            },
+          ]
+        );
+      }
+    };
+    verifyAuth();
+  }, []);
 
   const resetForm = () => {
     setFormData({

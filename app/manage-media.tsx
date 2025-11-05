@@ -1,6 +1,6 @@
 
 import { SafeAreaView } from 'react-native-safe-area-context';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { colors, commonStyles, buttonStyles } from '@/styles/commonStyles';
 import {
   View,
@@ -13,6 +13,7 @@ import {
   Image,
 } from 'react-native';
 import { useContent, MediaItem } from '@/contexts/ContentContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { IconSymbol } from '@/components/IconSymbol';
 import { Stack, router } from 'expo-router';
 
@@ -130,6 +131,7 @@ const styles = StyleSheet.create({
 
 export default function ManageMediaScreen() {
   const { media, addMedia, deleteMedia } = useContent();
+  const { checkAuth } = useAuth();
   const [formData, setFormData] = useState({
     title: '',
     type: 'image' as 'image' | 'video',
@@ -137,6 +139,25 @@ export default function ManageMediaScreen() {
     description: '',
     date: new Date().toISOString().split('T')[0],
   });
+
+  useEffect(() => {
+    const verifyAuth = async () => {
+      const authenticated = await checkAuth();
+      if (!authenticated) {
+        Alert.alert(
+          'Accès refusé',
+          'Vous devez vous connecter pour accéder à cette page',
+          [
+            {
+              text: 'OK',
+              onPress: () => router.replace('/admin-login'),
+            },
+          ]
+        );
+      }
+    };
+    verifyAuth();
+  }, []);
 
   const resetForm = () => {
     setFormData({

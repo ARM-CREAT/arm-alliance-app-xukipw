@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,10 +7,12 @@ import {
   Pressable,
   StyleSheet,
   Platform,
+  Alert,
 } from 'react-native';
 import { Stack, router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useContent } from '@/contexts/ContentContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { IconSymbol } from '@/components/IconSymbol';
 import { colors, commonStyles, buttonStyles } from '@/styles/commonStyles';
 
@@ -75,10 +77,48 @@ const adminMenuItems = [
 
 export default function AdminDashboardScreen() {
   const { news, events, media, members, refreshContent } = useContent();
+  const { isAuthenticated, logout, checkAuth } = useAuth();
+
+  useEffect(() => {
+    const verifyAuth = async () => {
+      const authenticated = await checkAuth();
+      if (!authenticated) {
+        Alert.alert(
+          'Accès refusé',
+          'Vous devez vous connecter pour accéder à cette page',
+          [
+            {
+              text: 'OK',
+              onPress: () => router.replace('/admin-login'),
+            },
+          ]
+        );
+      }
+    };
+    verifyAuth();
+  }, []);
 
   const handleRefresh = async () => {
     console.log('Refreshing content...');
     await refreshContent();
+  };
+
+  const handleLogout = () => {
+    Alert.alert(
+      'Déconnexion',
+      'Êtes-vous sûr de vouloir vous déconnecter ?',
+      [
+        { text: 'Annuler', style: 'cancel' },
+        {
+          text: 'Déconnexion',
+          style: 'destructive',
+          onPress: async () => {
+            await logout();
+            router.replace('/');
+          },
+        },
+      ]
+    );
   };
 
   return (
@@ -93,6 +133,11 @@ export default function AdminDashboardScreen() {
           headerLeft: () => (
             <Pressable onPress={() => router.back()} style={{ marginLeft: 8 }}>
               <IconSymbol name="chevron.left" size={24} color={colors.white} />
+            </Pressable>
+          ),
+          headerRight: () => (
+            <Pressable onPress={handleLogout} style={{ marginRight: 8 }}>
+              <IconSymbol name="rectangle.portrait.and.arrow.right" size={24} color={colors.white} />
             </Pressable>
           ),
         }}
@@ -166,6 +211,16 @@ export default function AdminDashboardScreen() {
             >
               <IconSymbol name="arrow.clockwise" size={20} color={colors.white} />
               <Text style={buttonStyles.secondaryText}>Actualiser le contenu</Text>
+            </Pressable>
+
+            <Pressable
+              style={[buttonStyles.outline, { borderColor: colors.error }]}
+              onPress={handleLogout}
+            >
+              <IconSymbol name="rectangle.portrait.and.arrow.right" size={20} color={colors.error} />
+              <Text style={[buttonStyles.textOutline, { color: colors.error, marginLeft: 8 }]}>
+                Se déconnecter
+              </Text>
             </Pressable>
           </View>
         </ScrollView>

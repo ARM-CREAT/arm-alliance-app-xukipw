@@ -15,6 +15,7 @@ import {
 import { IconSymbol } from '@/components/IconSymbol';
 import { Stack, router } from 'expo-router';
 import { useContent } from '@/contexts/ContentContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface AnalyticsData {
   totalMembers: number;
@@ -114,6 +115,7 @@ const styles = StyleSheet.create({
 
 export default function AnalyticsScreen() {
   const { news, events, media } = useContent();
+  const { checkAuth } = useAuth();
   const [analytics, setAnalytics] = useState<AnalyticsData>({
     totalMembers: 7,
     newMembersThisMonth: 3,
@@ -126,6 +128,25 @@ export default function AnalyticsScreen() {
     chatMessages: 0,
     pageViews: 0,
   });
+
+  useEffect(() => {
+    const verifyAuth = async () => {
+      const authenticated = await checkAuth();
+      if (!authenticated) {
+        Alert.alert(
+          'Accès refusé',
+          'Vous devez vous connecter pour accéder à cette page',
+          [
+            {
+              text: 'OK',
+              onPress: () => router.replace('/admin-login'),
+            },
+          ]
+        );
+      }
+    };
+    verifyAuth();
+  }, []);
 
   useEffect(() => {
     setAnalytics(prev => ({
