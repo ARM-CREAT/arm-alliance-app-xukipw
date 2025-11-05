@@ -1,86 +1,155 @@
 
-import React, { useState, useCallback } from "react";
-import { ScrollView, StyleSheet, View, Text, Pressable, RefreshControl, Platform } from "react-native";
 import { Stack, router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { IconSymbol } from "@/components/IconSymbol";
 import { colors, commonStyles } from "@/styles/commonStyles";
-import { SearchBar } from "@/components/SearchBar";
-import { FilterChip } from "@/components/FilterChip";
+import { ScrollView, StyleSheet, View, Text, Pressable, RefreshControl, Platform } from "react-native";
+import React, { useState, useCallback } from "react";
+import { IconSymbol } from "@/components/IconSymbol";
 import { SkeletonLoader } from "@/components/SkeletonLoader";
+import Animated, { FadeInDown } from "react-native-reanimated";
 import { Toast } from "@/components/Toast";
 import { useToast } from "@/hooks/useToast";
-import Animated, { FadeInDown } from "react-native-reanimated";
+import { FilterChip } from "@/components/FilterChip";
 import * as Haptics from "expo-haptics";
+import { SearchBar } from "@/components/SearchBar";
+import { useContent } from "@/contexts/ContentContext";
 
-const events = [
-  {
-    id: '1',
-    title: 'Assemblée Générale',
-    date: '15 Mars 2025',
-    time: '14:00',
-    location: 'Siège du parti, Bamako',
-    description: 'Réunion générale de tous les membres pour discuter des orientations stratégiques du parti.',
-    type: 'meeting',
-    status: 'upcoming',
+const styles = StyleSheet.create({
+  scrollView: {
+    flex: 1,
   },
-  {
-    id: '2',
-    title: 'Campagne de sensibilisation',
-    date: '22 Mars 2025',
-    time: '09:00',
-    location: 'Koutiala',
-    description: 'Campagne de sensibilisation sur nos programmes dans la région de Koutiala.',
-    type: 'campaign',
-    status: 'upcoming',
+  scrollContent: {
+    paddingBottom: 40,
   },
-  {
-    id: '3',
-    title: 'Forum sur l\'éducation',
-    date: '5 Avril 2025',
-    time: '10:00',
-    location: 'Centre culturel, Bamako',
-    description: 'Discussion sur l\'amélioration du système éducatif malien.',
-    type: 'forum',
-    status: 'upcoming',
+  header: {
+    backgroundColor: colors.primary,
+    padding: 20,
+    alignItems: 'center',
   },
-  {
-    id: '4',
-    title: 'Conférence de presse',
-    date: '10 Avril 2025',
-    time: '11:00',
-    location: 'Hôtel de l\'Amitié, Bamako',
-    description: 'Présentation des nouvelles initiatives du parti pour 2025.',
-    type: 'meeting',
-    status: 'upcoming',
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: '800',
+    color: colors.white,
+    marginBottom: 4,
   },
-];
-
-const eventTypes = ['Tous', 'Réunion', 'Campagne', 'Forum'];
+  headerSubtitle: {
+    fontSize: 14,
+    color: colors.white,
+  },
+  filterContainer: {
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+  },
+  filterScroll: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  eventCard: {
+    backgroundColor: colors.white,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+    boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
+    elevation: 2,
+  },
+  eventHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 12,
+  },
+  eventIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  eventInfo: {
+    flex: 1,
+  },
+  eventType: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: colors.accent,
+    marginBottom: 4,
+    textTransform: 'uppercase',
+  },
+  eventTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: colors.text,
+    marginBottom: 4,
+  },
+  eventDate: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    marginBottom: 8,
+  },
+  eventDescription: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    lineHeight: 20,
+    marginBottom: 12,
+  },
+  eventLocation: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  eventLocationText: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    marginLeft: 6,
+  },
+  registerButton: {
+    backgroundColor: colors.primary,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  registerButtonText: {
+    color: colors.white,
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  emptyState: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 60,
+  },
+  emptyText: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: colors.text,
+    marginTop: 16,
+  },
+  emptySubtext: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    marginTop: 4,
+  },
+});
 
 export default function EventsScreen() {
+  const { events, isLoading: contentLoading, refreshContent } = useContent();
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedType, setSelectedType] = useState('Tous');
+  const [selectedFilter, setSelectedFilter] = useState<string>('all');
   const [refreshing, setRefreshing] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [registeredEvents, setRegisteredEvents] = useState<string[]>([]);
   const { toast, showToast, hideToast } = useToast();
 
-  const onRefresh = useCallback(() => {
+  const onRefresh = useCallback(async () => {
     setRefreshing(true);
     if (Platform.OS !== 'web') {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
-    
-    setTimeout(() => {
-      setRefreshing(false);
-      showToast({
-        message: 'Événements mis à jour',
-        type: 'success',
-        duration: 2000,
-      });
-    }, 1500);
-  }, []);
+    await refreshContent();
+    showToast('Événements actualisés', 'success');
+    setRefreshing(false);
+  }, [refreshContent, showToast]);
 
   const getEventIcon = (type: string) => {
     switch (type) {
@@ -90,6 +159,8 @@ export default function EventsScreen() {
         return 'megaphone.fill';
       case 'forum':
         return 'bubble.left.and.bubble.right.fill';
+      case 'conference':
+        return 'video.fill';
       default:
         return 'calendar';
     }
@@ -103,40 +174,36 @@ export default function EventsScreen() {
         return 'Campagne';
       case 'forum':
         return 'Forum';
+      case 'conference':
+        return 'Conférence';
       default:
-        return type;
+        return 'Événement';
     }
   };
-
-  const filteredEvents = events.filter((item) => {
-    const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         item.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         item.location.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesType = selectedType === 'Tous' || getTypeLabel(item.type) === selectedType;
-    return matchesSearch && matchesType;
-  });
 
   const handleRegister = (eventId: string, eventTitle: string) => {
     if (Platform.OS !== 'web') {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     }
-    
-    if (registeredEvents.includes(eventId)) {
-      setRegisteredEvents(registeredEvents.filter(id => id !== eventId));
-      showToast({
-        message: 'Inscription annulée',
-        type: 'info',
-        duration: 2000,
-      });
-    } else {
-      setRegisteredEvents([...registeredEvents, eventId]);
-      showToast({
-        message: `Inscrit à: ${eventTitle}`,
-        type: 'success',
-        duration: 2500,
-      });
-    }
+    showToast(`Inscription à "${eventTitle}" confirmée !`, 'success');
   };
+
+  const filteredEvents = events.filter((event) => {
+    const matchesSearch =
+      event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      event.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      event.location.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesFilter = selectedFilter === 'all' || event.type === selectedFilter;
+    return matchesSearch && matchesFilter;
+  });
+
+  const eventTypes = [
+    { id: 'all', label: 'Tous' },
+    { id: 'meeting', label: 'Réunions' },
+    { id: 'campaign', label: 'Campagnes' },
+    { id: 'forum', label: 'Forums' },
+    { id: 'conference', label: 'Conférences' },
+  ];
 
   return (
     <>
@@ -150,17 +217,34 @@ export default function EventsScreen() {
           presentation: "modal",
         }}
       />
-      <SafeAreaView style={commonStyles.container} edges={['bottom']}>
-        {toast && (
-          <Toast
-            message={toast.message}
-            type={toast.type}
-            duration={toast.duration}
-            onHide={hideToast}
-          />
-        )}
-        
-        <ScrollView 
+      <SafeAreaView style={[commonStyles.container, { backgroundColor: colors.background }]} edges={['bottom']}>
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>Événements</Text>
+          <Text style={styles.headerSubtitle}>
+            {filteredEvents.length} événement{filteredEvents.length > 1 ? 's' : ''}
+          </Text>
+        </View>
+
+        <SearchBar
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          placeholder="Rechercher un événement..."
+        />
+
+        <View style={styles.filterContainer}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterScroll}>
+            {eventTypes.map((type) => (
+              <FilterChip
+                key={type.id}
+                label={type.label}
+                selected={selectedFilter === type.id}
+                onPress={() => setSelectedFilter(type.id)}
+              />
+            ))}
+          </ScrollView>
+        </View>
+
+        <ScrollView
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
@@ -173,251 +257,70 @@ export default function EventsScreen() {
             />
           }
         >
-          <View style={styles.header}>
-            <IconSymbol name="calendar" size={48} color={colors.accent} />
-            <Text style={[commonStyles.title, { color: colors.primary, marginTop: 16 }]}>
-              Nos Événements
-            </Text>
-            <Text style={[commonStyles.textSecondary, { textAlign: 'center' }]}>
-              Participez à nos activités et événements
-            </Text>
-          </View>
-
           <View style={commonStyles.section}>
-            <SearchBar
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              placeholder="Rechercher un événement..."
-            />
+            {contentLoading && events.length === 0 ? (
+              <>
+                <SkeletonLoader width="100%" height={150} style={{ marginBottom: 12 }} />
+                <SkeletonLoader width="100%" height={150} style={{ marginBottom: 12 }} />
+                <SkeletonLoader width="100%" height={150} />
+              </>
+            ) : filteredEvents.length > 0 ? (
+              filteredEvents.map((event, index) => (
+                <Animated.View
+                  key={event.id}
+                  entering={FadeInDown.delay(index * 100).springify()}
+                >
+                  <View style={styles.eventCard}>
+                    <View style={styles.eventHeader}>
+                      <View style={[styles.eventIcon, { backgroundColor: colors.card }]}>
+                        <IconSymbol name={getEventIcon(event.type)} size={24} color={colors.primary} />
+                      </View>
+                      <View style={styles.eventInfo}>
+                        <Text style={styles.eventType}>{getTypeLabel(event.type)}</Text>
+                        <Text style={styles.eventTitle}>{event.title}</Text>
+                        <Text style={styles.eventDate}>
+                          <IconSymbol name="calendar" size={14} color={colors.textSecondary} />
+                          {' '}{event.date}
+                        </Text>
+                      </View>
+                    </View>
 
-            <View style={styles.filterContainer}>
-              {eventTypes.map((type) => (
-                <FilterChip
-                  key={type}
-                  label={type}
-                  selected={selectedType === type}
-                  onPress={() => {
-                    setSelectedType(type);
-                    if (Platform.OS !== 'web') {
-                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    }
-                  }}
-                />
-              ))}
-            </View>
+                    <Text style={styles.eventDescription}>{event.description}</Text>
 
-            {isLoading ? (
-              <SkeletonLoader type="list" count={4} />
-            ) : filteredEvents.length === 0 ? (
+                    <View style={styles.eventLocation}>
+                      <IconSymbol name="mappin.circle.fill" size={16} color={colors.accent} />
+                      <Text style={styles.eventLocationText}>{event.location}</Text>
+                    </View>
+
+                    <Pressable
+                      style={styles.registerButton}
+                      onPress={() => handleRegister(event.id, event.title)}
+                    >
+                      <Text style={styles.registerButtonText}>S&apos;inscrire</Text>
+                    </Pressable>
+                  </View>
+                </Animated.View>
+              ))
+            ) : (
               <View style={styles.emptyState}>
-                <IconSymbol name="calendar.badge.exclamationmark" size={64} color={colors.textSecondary} />
+                <IconSymbol name="calendar" size={48} color={colors.textSecondary} />
                 <Text style={styles.emptyText}>Aucun événement trouvé</Text>
                 <Text style={styles.emptySubtext}>
-                  Essayez de modifier vos critères de recherche
+                  {searchQuery ? 'Essayez une autre recherche' : 'Aucun événement disponible pour le moment'}
                 </Text>
               </View>
-            ) : (
-              filteredEvents.map((event, index) => {
-                const isRegistered = registeredEvents.includes(event.id);
-                return (
-                  <Animated.View
-                    key={event.id}
-                    entering={FadeInDown.delay(index * 100).springify()}
-                  >
-                    <View style={styles.eventCard}>
-                      <View style={styles.eventHeader}>
-                        <View style={[styles.eventIcon, { backgroundColor: colors.accent }]}>
-                          <IconSymbol name={getEventIcon(event.type)} size={24} color={colors.white} />
-                        </View>
-                        <View style={styles.eventHeaderText}>
-                          <Text style={styles.eventTitle}>{event.title}</Text>
-                          <View style={styles.eventMeta}>
-                            <IconSymbol name="calendar" size={14} color={colors.textSecondary} />
-                            <Text style={styles.eventMetaText}>{event.date}</Text>
-                            <IconSymbol name="clock" size={14} color={colors.textSecondary} style={{ marginLeft: 12 }} />
-                            <Text style={styles.eventMetaText}>{event.time}</Text>
-                          </View>
-                        </View>
-                      </View>
-                      
-                      <View style={styles.eventLocation}>
-                        <IconSymbol name="location.fill" size={16} color={colors.primary} />
-                        <Text style={styles.eventLocationText}>{event.location}</Text>
-                      </View>
-
-                      <Text style={styles.eventDescription}>{event.description}</Text>
-
-                      <Pressable
-                        style={[
-                          styles.eventButton,
-                          isRegistered && styles.eventButtonRegistered,
-                        ]}
-                        onPress={() => handleRegister(event.id, event.title)}
-                      >
-                        <IconSymbol
-                          name={isRegistered ? "checkmark.circle.fill" : "person.badge.plus"}
-                          size={20}
-                          color={isRegistered ? colors.white : colors.primary}
-                        />
-                        <Text style={[
-                          styles.eventButtonText,
-                          isRegistered && styles.eventButtonTextRegistered,
-                        ]}>
-                          {isRegistered ? 'Inscrit' : 'S\'inscrire'}
-                        </Text>
-                      </Pressable>
-                    </View>
-                  </Animated.View>
-                );
-              })
             )}
           </View>
-
-          <Pressable 
-            style={[styles.backButton, { backgroundColor: colors.primary }]} 
-            onPress={() => {
-              if (Platform.OS !== 'web') {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-              }
-              router.back();
-            }}
-          >
-            <Text style={styles.backButtonText}>Retour</Text>
-          </Pressable>
         </ScrollView>
+
+        {toast.visible && (
+          <Toast
+            message={toast.message}
+            type={toast.type}
+            onHide={hideToast}
+          />
+        )}
       </SafeAreaView>
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingBottom: 40,
-  },
-  header: {
-    alignItems: 'center',
-    paddingVertical: 24,
-    paddingHorizontal: 20,
-  },
-  filterContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginBottom: 16,
-  },
-  eventCard: {
-    backgroundColor: colors.white,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: colors.border,
-    boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
-    elevation: 2,
-  },
-  eventHeader: {
-    flexDirection: 'row',
-    marginBottom: 12,
-  },
-  eventIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  eventHeaderText: {
-    flex: 1,
-  },
-  eventTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: colors.text,
-    marginBottom: 6,
-  },
-  eventMeta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  eventMetaText: {
-    fontSize: 13,
-    color: colors.textSecondary,
-    marginLeft: 4,
-  },
-  eventLocation: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    backgroundColor: colors.card,
-    borderRadius: 8,
-  },
-  eventLocationText: {
-    fontSize: 14,
-    color: colors.text,
-    marginLeft: 8,
-    fontWeight: '500',
-  },
-  eventDescription: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    lineHeight: 20,
-    marginBottom: 12,
-  },
-  eventButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    borderWidth: 2,
-    borderColor: colors.primary,
-    backgroundColor: colors.white,
-  },
-  eventButtonRegistered: {
-    backgroundColor: colors.success,
-    borderColor: colors.success,
-  },
-  eventButtonText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: colors.primary,
-    marginLeft: 8,
-  },
-  eventButtonTextRegistered: {
-    color: colors.white,
-  },
-  emptyState: {
-    alignItems: 'center',
-    paddingVertical: 60,
-  },
-  emptyText: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: colors.text,
-    marginTop: 16,
-  },
-  emptySubtext: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    marginTop: 8,
-    textAlign: 'center',
-  },
-  backButton: {
-    marginHorizontal: 20,
-    marginTop: 8,
-    paddingVertical: 14,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  backButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.white,
-  },
-});

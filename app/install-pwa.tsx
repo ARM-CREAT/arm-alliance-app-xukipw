@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -7,58 +7,13 @@ import {
   Pressable,
   StyleSheet,
   Platform,
-  Alert,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { IconSymbol } from '@/components/IconSymbol';
 import { Stack, router } from 'expo-router';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, commonStyles, buttonStyles } from '@/styles/commonStyles';
+import { IconSymbol } from '@/components/IconSymbol';
 
 export default function InstallPWAScreen() {
-  const [isInstallable, setIsInstallable] = useState(false);
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
-
-  useEffect(() => {
-    if (Platform.OS === 'web') {
-      const handler = (e: any) => {
-        e.preventDefault();
-        setDeferredPrompt(e);
-        setIsInstallable(true);
-        console.log('PWA install prompt available');
-      };
-
-      window.addEventListener('beforeinstallprompt', handler);
-
-      return () => {
-        window.removeEventListener('beforeinstallprompt', handler);
-      };
-    }
-  }, []);
-
-  const handleInstall = async () => {
-    if (!deferredPrompt) {
-      Alert.alert(
-        'Installation',
-        'L\'application est déjà installée ou votre navigateur ne supporte pas l\'installation.'
-      );
-      return;
-    }
-
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    
-    if (outcome === 'accepted') {
-      Alert.alert('Succès', 'L\'application a été installée avec succès!');
-      console.log('PWA installed successfully');
-    } else {
-      Alert.alert('Annulé', 'L\'installation a été annulée');
-      console.log('PWA installation cancelled');
-    }
-
-    setDeferredPrompt(null);
-    setIsInstallable(false);
-  };
-
   return (
     <>
       <Stack.Screen
@@ -71,133 +26,196 @@ export default function InstallPWAScreen() {
           presentation: 'modal',
         }}
       />
-      <SafeAreaView style={commonStyles.container} edges={['bottom']}>
+      <SafeAreaView style={[commonStyles.container, { backgroundColor: colors.background }]} edges={['bottom']}>
         <ScrollView
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.header}>
-            <IconSymbol name="arrow.down.circle.fill" size={64} color={colors.primary} />
-            <Text style={[commonStyles.title, { color: colors.primary, marginTop: 16 }]}>
-              Installer A.R.M
-            </Text>
-            <Text style={[commonStyles.textSecondary, { textAlign: 'center' }]}>
-              Installez l&apos;application sur votre appareil pour un accès rapide
+            <View style={styles.iconContainer}>
+              <IconSymbol name="arrow.down.circle.fill" size={64} color={colors.success} />
+            </View>
+            <Text style={styles.title}>Installer A.R.M</Text>
+            <Text style={styles.subtitle}>
+              Installez notre application pour un accès rapide et une meilleure expérience
             </Text>
           </View>
 
-          {/* Benefits */}
           <View style={commonStyles.section}>
-            <Text style={[commonStyles.subtitle, { color: colors.primary }]}>
+            <Text style={[commonStyles.subtitle, { color: colors.primary, marginBottom: 16 }]}>
               Avantages de l&apos;installation
             </Text>
-            <View style={styles.benefitCard}>
-              <View style={styles.benefitRow}>
-                <IconSymbol name="bolt.fill" size={24} color={colors.primary} />
-                <Text style={styles.benefitText}>Accès rapide depuis votre écran d&apos;accueil</Text>
-              </View>
-              <View style={styles.benefitRow}>
-                <IconSymbol name="wifi.slash" size={24} color={colors.accent} />
-                <Text style={styles.benefitText}>Fonctionne hors ligne</Text>
-              </View>
-              <View style={styles.benefitRow}>
-                <IconSymbol name="bell.fill" size={24} color={colors.highlight} />
-                <Text style={styles.benefitText}>Recevez des notifications</Text>
-              </View>
-              <View style={styles.benefitRow}>
-                <IconSymbol name="speedometer" size={24} color={colors.success} />
-                <Text style={styles.benefitText}>Chargement plus rapide</Text>
-              </View>
-            </View>
-          </View>
-
-          {/* Installation Instructions */}
-          <View style={commonStyles.section}>
-            <Text style={[commonStyles.subtitle, { color: colors.primary }]}>
-              Comment installer
-            </Text>
-
-            {Platform.OS === 'web' && (
-              <View style={styles.instructionsCard}>
-                <Text style={styles.instructionTitle}>Sur ordinateur (Chrome/Edge):</Text>
-                <Text style={styles.instructionStep}>1. Cliquez sur le bouton &quot;Installer&quot; ci-dessous</Text>
-                <Text style={styles.instructionStep}>2. Ou cliquez sur l&apos;icône d&apos;installation dans la barre d&apos;adresse</Text>
-                <Text style={styles.instructionStep}>3. Confirmez l&apos;installation</Text>
-
-                <View style={styles.divider} />
-
-                <Text style={styles.instructionTitle}>Sur mobile (Safari iOS):</Text>
-                <Text style={styles.instructionStep}>1. Appuyez sur le bouton de partage</Text>
-                <Text style={styles.instructionStep}>2. Sélectionnez &quot;Sur l&apos;écran d&apos;accueil&quot;</Text>
-                <Text style={styles.instructionStep}>3. Appuyez sur &quot;Ajouter&quot;</Text>
-
-                <View style={styles.divider} />
-
-                <Text style={styles.instructionTitle}>Sur mobile (Chrome Android):</Text>
-                <Text style={styles.instructionStep}>1. Appuyez sur le menu (3 points)</Text>
-                <Text style={styles.instructionStep}>2. Sélectionnez &quot;Installer l&apos;application&quot;</Text>
-                <Text style={styles.instructionStep}>3. Confirmez l&apos;installation</Text>
-              </View>
-            )}
-
-            {Platform.OS === 'android' && (
-              <View style={styles.instructionsCard}>
-                <Text style={styles.instructionTitle}>Application Android:</Text>
-                <Text style={styles.instructionStep}>
-                  L&apos;application est déjà installée sur votre appareil Android.
-                </Text>
-                <Text style={[commonStyles.textSecondary, { marginTop: 12 }]}>
-                  Pour télécharger l&apos;APK, visitez notre site web depuis un navigateur.
-                </Text>
-              </View>
-            )}
-
-            {Platform.OS === 'ios' && (
-              <View style={styles.instructionsCard}>
-                <Text style={styles.instructionTitle}>Application iOS:</Text>
-                <Text style={styles.instructionStep}>
-                  L&apos;application est déjà installée sur votre appareil iOS.
-                </Text>
-              </View>
-            )}
-          </View>
-
-          {/* Install Button */}
-          {Platform.OS === 'web' && (
-            <View style={commonStyles.section}>
-              {isInstallable ? (
-                <Pressable style={buttonStyles.primary} onPress={handleInstall}>
-                  <IconSymbol name="arrow.down.circle.fill" size={20} color={colors.white} />
-                  <Text style={[buttonStyles.text, { marginLeft: 8 }]}>
-                    Installer maintenant
-                  </Text>
-                </Pressable>
-              ) : (
-                <View style={styles.notInstallableCard}>
-                  <IconSymbol name="checkmark.circle.fill" size={32} color={colors.success} />
-                  <Text style={styles.notInstallableText}>
-                    L&apos;application est déjà installée ou votre navigateur ne supporte pas l&apos;installation PWA.
+            <View style={commonStyles.cardWhite}>
+              <View style={styles.benefitItem}>
+                <IconSymbol name="bolt.fill" size={24} color={colors.success} />
+                <View style={styles.benefitContent}>
+                  <Text style={styles.benefitTitle}>Accès rapide</Text>
+                  <Text style={styles.benefitText}>
+                    Lancez l&apos;application directement depuis votre écran d&apos;accueil
                   </Text>
                 </View>
-              )}
+              </View>
 
-              <Pressable
-                style={[buttonStyles.outline, { marginTop: 12 }]}
-                onPress={() => router.back()}
-              >
-                <Text style={buttonStyles.textOutline}>Retour</Text>
-              </Pressable>
+              <View style={styles.benefitItem}>
+                <IconSymbol name="wifi.slash" size={24} color={colors.accent} />
+                <View style={styles.benefitContent}>
+                  <Text style={styles.benefitTitle}>Mode hors ligne</Text>
+                  <Text style={styles.benefitText}>
+                    Consultez certaines informations même sans connexion internet
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.benefitItem}>
+                <IconSymbol name="bell.fill" size={24} color={colors.highlight} />
+                <View style={styles.benefitContent}>
+                  <Text style={styles.benefitTitle}>Notifications</Text>
+                  <Text style={styles.benefitText}>
+                    Recevez des alertes sur les événements et actualités importantes
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.benefitItem}>
+                <IconSymbol name="sparkles" size={24} color={colors.primary} />
+                <View style={styles.benefitContent}>
+                  <Text style={styles.benefitTitle}>Expérience optimisée</Text>
+                  <Text style={styles.benefitText}>
+                    Interface fluide et adaptée à votre appareil
+                  </Text>
+                </View>
+              </View>
             </View>
-          )}
+          </View>
 
-          {Platform.OS !== 'web' && (
+          {Platform.OS === 'ios' && (
             <View style={commonStyles.section}>
-              <Pressable style={buttonStyles.primary} onPress={() => router.back()}>
-                <Text style={buttonStyles.text}>Retour</Text>
-              </Pressable>
+              <Text style={[commonStyles.subtitle, { color: colors.primary, marginBottom: 16 }]}>
+                Sur iOS (iPhone/iPad)
+              </Text>
+              <View style={commonStyles.cardWhite}>
+                <View style={styles.step}>
+                  <View style={styles.stepNumber}>
+                    <Text style={styles.stepNumberText}>1</Text>
+                  </View>
+                  <Text style={styles.stepText}>
+                    Ouvrez cette page dans Safari
+                  </Text>
+                </View>
+                <View style={styles.step}>
+                  <View style={styles.stepNumber}>
+                    <Text style={styles.stepNumberText}>2</Text>
+                  </View>
+                  <Text style={styles.stepText}>
+                    Appuyez sur le bouton de partage <IconSymbol name="square.and.arrow.up" size={16} color={colors.primary} />
+                  </Text>
+                </View>
+                <View style={styles.step}>
+                  <View style={styles.stepNumber}>
+                    <Text style={styles.stepNumberText}>3</Text>
+                  </View>
+                  <Text style={styles.stepText}>
+                    Sélectionnez &quot;Sur l&apos;écran d&apos;accueil&quot;
+                  </Text>
+                </View>
+                <View style={styles.step}>
+                  <View style={styles.stepNumber}>
+                    <Text style={styles.stepNumberText}>4</Text>
+                  </View>
+                  <Text style={styles.stepText}>
+                    Appuyez sur &quot;Ajouter&quot;
+                  </Text>
+                </View>
+              </View>
             </View>
           )}
+
+          {Platform.OS === 'android' && (
+            <View style={commonStyles.section}>
+              <Text style={[commonStyles.subtitle, { color: colors.primary, marginBottom: 16 }]}>
+                Sur Android
+              </Text>
+              <View style={commonStyles.cardWhite}>
+                <View style={styles.step}>
+                  <View style={styles.stepNumber}>
+                    <Text style={styles.stepNumberText}>1</Text>
+                  </View>
+                  <Text style={styles.stepText}>
+                    Ouvrez cette page dans Chrome
+                  </Text>
+                </View>
+                <View style={styles.step}>
+                  <View style={styles.stepNumber}>
+                    <Text style={styles.stepNumberText}>2</Text>
+                  </View>
+                  <Text style={styles.stepText}>
+                    Appuyez sur le menu (⋮) en haut à droite
+                  </Text>
+                </View>
+                <View style={styles.step}>
+                  <View style={styles.stepNumber}>
+                    <Text style={styles.stepNumberText}>3</Text>
+                  </View>
+                  <Text style={styles.stepText}>
+                    Sélectionnez &quot;Ajouter à l&apos;écran d&apos;accueil&quot;
+                  </Text>
+                </View>
+                <View style={styles.step}>
+                  <View style={styles.stepNumber}>
+                    <Text style={styles.stepNumberText}>4</Text>
+                  </View>
+                  <Text style={styles.stepText}>
+                    Confirmez en appuyant sur &quot;Ajouter&quot;
+                  </Text>
+                </View>
+              </View>
+            </View>
+          )}
+
+          {Platform.OS === 'web' && (
+            <View style={commonStyles.section}>
+              <Text style={[commonStyles.subtitle, { color: colors.primary, marginBottom: 16 }]}>
+                Sur ordinateur
+              </Text>
+              <View style={commonStyles.cardWhite}>
+                <View style={styles.step}>
+                  <View style={styles.stepNumber}>
+                    <Text style={styles.stepNumberText}>1</Text>
+                  </View>
+                  <Text style={styles.stepText}>
+                    Cliquez sur l&apos;icône d&apos;installation dans la barre d&apos;adresse
+                  </Text>
+                </View>
+                <View style={styles.step}>
+                  <View style={styles.stepNumber}>
+                    <Text style={styles.stepNumberText}>2</Text>
+                  </View>
+                  <Text style={styles.stepText}>
+                    Ou utilisez le menu du navigateur : Plus d&apos;outils → Installer l&apos;application
+                  </Text>
+                </View>
+              </View>
+            </View>
+          )}
+
+          <View style={commonStyles.section}>
+            <View style={styles.infoBox}>
+              <IconSymbol name="info.circle.fill" size={24} color={colors.accent} />
+              <Text style={styles.infoText}>
+                L&apos;application ne prend que quelques secondes à installer et ne nécessite aucun téléchargement depuis un store.
+              </Text>
+            </View>
+          </View>
+
+          <View style={commonStyles.section}>
+            <Pressable
+              style={buttonStyles.outline}
+              onPress={() => router.back()}
+            >
+              <Text style={buttonStyles.textOutline}>Retour</Text>
+            </Pressable>
+          </View>
         </ScrollView>
       </SafeAreaView>
     </>
@@ -213,66 +231,89 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: 'center',
-    paddingVertical: 24,
+    paddingVertical: 32,
     paddingHorizontal: 20,
   },
-  benefitCard: {
-    backgroundColor: colors.white,
-    borderRadius: 12,
-    padding: 16,
-    marginTop: 12,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  benefitRow: {
-    flexDirection: 'row',
+  iconContainer: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: colors.card,
+    justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 20,
   },
-  benefitText: {
-    fontSize: 15,
+  title: {
+    fontSize: 28,
+    fontWeight: '800',
     color: colors.text,
-    marginLeft: 12,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  subtitle: {
+    fontSize: 16,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 24,
+  },
+  benefitItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 20,
+    gap: 12,
+  },
+  benefitContent: {
     flex: 1,
   },
-  instructionsCard: {
-    backgroundColor: colors.white,
-    borderRadius: 12,
-    padding: 16,
-    marginTop: 12,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  instructionTitle: {
+  benefitTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: colors.primary,
-    marginBottom: 8,
-  },
-  instructionStep: {
-    fontSize: 14,
     color: colors.text,
-    marginBottom: 6,
+    marginBottom: 4,
+  },
+  benefitText: {
+    fontSize: 14,
+    color: colors.textSecondary,
     lineHeight: 20,
   },
-  divider: {
-    height: 1,
-    backgroundColor: colors.border,
-    marginVertical: 16,
+  step: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 16,
+    gap: 12,
   },
-  notInstallableCard: {
-    backgroundColor: colors.white,
-    borderRadius: 12,
-    padding: 20,
+  stepNumber: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: colors.primary,
+    justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: colors.success,
   },
-  notInstallableText: {
-    fontSize: 14,
+  stepNumberText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: colors.white,
+  },
+  stepText: {
+    flex: 1,
+    fontSize: 15,
     color: colors.text,
-    textAlign: 'center',
-    marginTop: 12,
+    lineHeight: 22,
+    paddingTop: 4,
+  },
+  infoBox: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: colors.card,
+    padding: 16,
+    borderRadius: 12,
+    gap: 12,
+  },
+  infoText: {
+    flex: 1,
+    fontSize: 14,
+    color: colors.textSecondary,
     lineHeight: 20,
   },
 });

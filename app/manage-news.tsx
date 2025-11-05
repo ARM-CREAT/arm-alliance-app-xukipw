@@ -1,4 +1,5 @@
 
+import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState } from 'react';
 import {
   View,
@@ -9,235 +10,11 @@ import {
   TextInput,
   Alert,
 } from 'react-native';
-import { Stack, router } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useAuth } from '@/contexts/AuthContext';
 import { colors, commonStyles, buttonStyles } from '@/styles/commonStyles';
 import { IconSymbol } from '@/components/IconSymbol';
 import { useContent, NewsItem } from '@/contexts/ContentContext';
-import { useAuth } from '@/contexts/AuthContext';
-
-export default function ManageNewsScreen() {
-  const { isAdmin } = useAuth();
-  const { news, addNews, updateNews, deleteNews } = useContent();
-  const [showForm, setShowForm] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
-  const [category, setCategory] = useState('Politique');
-
-  React.useEffect(() => {
-    if (!isAdmin) {
-      router.replace('/admin-login');
-    }
-  }, [isAdmin]);
-
-  const categories = ['Politique', 'Économie', 'Social', 'Culture', 'Autre'];
-
-  const resetForm = () => {
-    setTitle('');
-    setContent('');
-    setCategory('Politique');
-    setEditingId(null);
-    setShowForm(false);
-  };
-
-  const handleSubmit = async () => {
-    if (!title.trim() || !content.trim()) {
-      Alert.alert('Erreur', 'Veuillez remplir tous les champs');
-      return;
-    }
-
-    try {
-      if (editingId) {
-        await updateNews(editingId, { title, content, category });
-        Alert.alert('Succès', 'Actualité mise à jour!');
-      } else {
-        await addNews({
-          title,
-          content,
-          category,
-          date: new Date().toISOString().split('T')[0],
-        });
-        Alert.alert('Succès', 'Actualité ajoutée!');
-      }
-      resetForm();
-    } catch (error) {
-      Alert.alert('Erreur', 'Une erreur est survenue');
-      console.log('Error:', error);
-    }
-  };
-
-  const handleEdit = (item: NewsItem) => {
-    setEditingId(item.id);
-    setTitle(item.title);
-    setContent(item.content);
-    setCategory(item.category);
-    setShowForm(true);
-  };
-
-  const handleDelete = (id: string) => {
-    Alert.alert(
-      'Supprimer',
-      'Êtes-vous sûr de vouloir supprimer cette actualité?',
-      [
-        { text: 'Annuler', style: 'cancel' },
-        {
-          text: 'Supprimer',
-          style: 'destructive',
-          onPress: async () => {
-            await deleteNews(id);
-            Alert.alert('Succès', 'Actualité supprimée!');
-          },
-        },
-      ]
-    );
-  };
-
-  if (!isAdmin) {
-    return null;
-  }
-
-  return (
-    <>
-      <Stack.Screen
-        options={{
-          title: 'Gérer les Actualités',
-          headerStyle: {
-            backgroundColor: colors.primary,
-          },
-          headerTintColor: colors.white,
-        }}
-      />
-      <SafeAreaView style={[commonStyles.container, { backgroundColor: colors.background }]} edges={['bottom']}>
-        <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
-          {/* Add Button */}
-          {!showForm && (
-            <View style={commonStyles.section}>
-              <Pressable
-                style={buttonStyles.primary}
-                onPress={() => setShowForm(true)}
-              >
-                <IconSymbol name="plus.circle.fill" size={20} color={colors.white} />
-                <Text style={[buttonStyles.text, { marginLeft: 8 }]}>
-                  Nouvelle Actualité
-                </Text>
-              </Pressable>
-            </View>
-          )}
-
-          {/* Form */}
-          {showForm && (
-            <View style={commonStyles.section}>
-              <Text style={[commonStyles.subtitle, { color: colors.primary }]}>
-                {editingId ? 'Modifier l\'Actualité' : 'Nouvelle Actualité'}
-              </Text>
-              <View style={commonStyles.cardWhite}>
-                <Text style={commonStyles.label}>Titre</Text>
-                <TextInput
-                  style={commonStyles.input}
-                  value={title}
-                  onChangeText={setTitle}
-                  placeholder="Titre de l'actualité"
-                />
-
-                <Text style={commonStyles.label}>Catégorie</Text>
-                <View style={styles.categoryContainer}>
-                  {categories.map((cat) => (
-                    <Pressable
-                      key={cat}
-                      style={[
-                        styles.categoryButton,
-                        category === cat && styles.categoryButtonActive,
-                      ]}
-                      onPress={() => setCategory(cat)}
-                    >
-                      <Text
-                        style={[
-                          styles.categoryButtonText,
-                          category === cat && styles.categoryButtonTextActive,
-                        ]}
-                      >
-                        {cat}
-                      </Text>
-                    </Pressable>
-                  ))}
-                </View>
-
-                <Text style={commonStyles.label}>Contenu</Text>
-                <TextInput
-                  style={commonStyles.inputMultiline}
-                  value={content}
-                  onChangeText={setContent}
-                  placeholder="Contenu de l'actualité"
-                  multiline
-                  numberOfLines={6}
-                />
-
-                <View style={styles.buttonRow}>
-                  <Pressable
-                    style={[buttonStyles.outline, { flex: 1 }]}
-                    onPress={resetForm}
-                  >
-                    <Text style={buttonStyles.textOutline}>Annuler</Text>
-                  </Pressable>
-                  <Pressable
-                    style={[buttonStyles.primary, { flex: 1 }]}
-                    onPress={handleSubmit}
-                  >
-                    <Text style={buttonStyles.text}>
-                      {editingId ? 'Mettre à jour' : 'Ajouter'}
-                    </Text>
-                  </Pressable>
-                </View>
-              </View>
-            </View>
-          )}
-
-          {/* News List */}
-          <View style={commonStyles.section}>
-            <Text style={[commonStyles.subtitle, { color: colors.primary }]}>
-              Actualités ({news.length})
-            </Text>
-            {news.map((item) => (
-              <View key={item.id} style={styles.newsCard}>
-                <View style={styles.newsHeader}>
-                  <View style={[styles.categoryBadge, { backgroundColor: colors.primary }]}>
-                    <Text style={styles.categoryText}>{item.category}</Text>
-                  </View>
-                  <Text style={styles.dateText}>{item.date}</Text>
-                </View>
-                <Text style={styles.newsTitle}>{item.title}</Text>
-                <Text style={styles.newsContent} numberOfLines={2}>
-                  {item.content}
-                </Text>
-                <View style={styles.newsActions}>
-                  <Pressable
-                    style={styles.actionButton}
-                    onPress={() => handleEdit(item)}
-                  >
-                    <IconSymbol name="pencil" size={20} color={colors.accent} />
-                    <Text style={[styles.actionButtonText, { color: colors.accent }]}>
-                      Modifier
-                    </Text>
-                  </Pressable>
-                  <Pressable
-                    style={styles.actionButton}
-                    onPress={() => handleDelete(item.id)}
-                  >
-                    <IconSymbol name="trash" size={20} color={colors.error} />
-                    <Text style={[styles.actionButtonText, { color: colors.error }]}>
-                      Supprimer
-                    </Text>
-                  </Pressable>
-                </View>
-              </View>
-            ))}
-          </View>
-        </ScrollView>
-      </SafeAreaView>
-    </>
-  );
-}
+import { Stack, router } from 'expo-router';
 
 const styles = StyleSheet.create({
   scrollView: {
@@ -246,37 +23,31 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: 40,
   },
-  buttonRow: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  categoryContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    marginBottom: 16,
-  },
-  categoryButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.white,
-  },
-  categoryButtonActive: {
+  header: {
     backgroundColor: colors.primary,
-    borderColor: colors.primary,
+    padding: 20,
+    alignItems: 'center',
   },
-  categoryButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.text,
-  },
-  categoryButtonTextActive: {
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: '800',
     color: colors.white,
   },
-  newsCard: {
+  formSection: {
+    backgroundColor: colors.white,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: colors.text,
+    marginBottom: 16,
+  },
+  newsItem: {
     backgroundColor: colors.white,
     borderRadius: 12,
     padding: 16,
@@ -284,52 +55,266 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
   },
-  newsHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  categoryBadge: {
-    paddingVertical: 4,
-    paddingHorizontal: 12,
-    borderRadius: 12,
-  },
-  categoryText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: colors.white,
-  },
-  dateText: {
-    fontSize: 12,
-    color: colors.textSecondary,
-  },
   newsTitle: {
     fontSize: 16,
     fontWeight: '700',
     color: colors.text,
+    marginBottom: 4,
+  },
+  newsCategory: {
+    fontSize: 14,
+    color: colors.accent,
     marginBottom: 8,
   },
-  newsContent: {
-    fontSize: 14,
+  newsDate: {
+    fontSize: 12,
     color: colors.textSecondary,
-    lineHeight: 20,
     marginBottom: 12,
   },
   newsActions: {
     flexDirection: 'row',
-    gap: 16,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
+    gap: 8,
   },
   actionButton: {
-    flexDirection: 'row',
+    flex: 1,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
     alignItems: 'center',
-    gap: 6,
+  },
+  editButton: {
+    backgroundColor: colors.accent,
+  },
+  deleteButton: {
+    backgroundColor: colors.error,
   },
   actionButtonText: {
+    color: colors.white,
     fontSize: 14,
     fontWeight: '600',
   },
+  emptyState: {
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: colors.textSecondary,
+    marginTop: 12,
+  },
 });
+
+export default function ManageNewsScreen() {
+  const { isAdmin } = useAuth();
+  const { news, addNews, updateNews, deleteNews } = useContent();
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [formData, setFormData] = useState({
+    title: '',
+    content: '',
+    category: '',
+    date: new Date().toISOString().split('T')[0],
+    image: '',
+  });
+
+  const resetForm = () => {
+    setFormData({
+      title: '',
+      content: '',
+      category: '',
+      date: new Date().toISOString().split('T')[0],
+      image: '',
+    });
+    setEditingId(null);
+  };
+
+  const handleSubmit = async () => {
+    if (!formData.title || !formData.content || !formData.category) {
+      Alert.alert('Erreur', 'Veuillez remplir tous les champs obligatoires');
+      return;
+    }
+
+    try {
+      if (editingId) {
+        await updateNews(editingId, formData);
+        Alert.alert('Succès', 'Actualité mise à jour avec succès');
+      } else {
+        await addNews(formData);
+        Alert.alert('Succès', 'Actualité ajoutée avec succès');
+      }
+      resetForm();
+    } catch (error) {
+      console.error('Erreur lors de la sauvegarde:', error);
+      Alert.alert('Erreur', 'Impossible de sauvegarder l\'actualité');
+    }
+  };
+
+  const handleEdit = (item: NewsItem) => {
+    setFormData({
+      title: item.title,
+      content: item.content,
+      category: item.category,
+      date: item.date,
+      image: item.image || '',
+    });
+    setEditingId(item.id);
+  };
+
+  const handleDelete = async (id: string) => {
+    Alert.alert(
+      'Confirmer la suppression',
+      'Êtes-vous sûr de vouloir supprimer cette actualité ?',
+      [
+        { text: 'Annuler', style: 'cancel' },
+        {
+          text: 'Supprimer',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await deleteNews(id);
+              Alert.alert('Succès', 'Actualité supprimée');
+            } catch (error) {
+              console.error('Erreur lors de la suppression:', error);
+              Alert.alert('Erreur', 'Impossible de supprimer l\'actualité');
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  if (!isAdmin) {
+    return (
+      <SafeAreaView style={commonStyles.container}>
+        <View style={styles.emptyState}>
+          <IconSymbol name="lock.fill" size={48} color={colors.textSecondary} />
+          <Text style={styles.emptyText}>Accès non autorisé</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  return (
+    <>
+      <Stack.Screen
+        options={{
+          title: 'Gérer les actualités',
+          headerStyle: {
+            backgroundColor: colors.primary,
+          },
+          headerTintColor: colors.white,
+        }}
+      />
+      <SafeAreaView style={[commonStyles.container, { backgroundColor: colors.background }]} edges={['bottom']}>
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.header}>
+            <Text style={styles.headerTitle}>Gérer les actualités</Text>
+          </View>
+
+          <View style={commonStyles.section}>
+            <View style={styles.formSection}>
+              <Text style={styles.sectionTitle}>
+                {editingId ? 'Modifier l\'actualité' : 'Ajouter une actualité'}
+              </Text>
+
+              <Text style={commonStyles.label}>Titre *</Text>
+              <TextInput
+                style={commonStyles.input}
+                placeholder="Titre de l'actualité"
+                value={formData.title}
+                onChangeText={(text) => setFormData({ ...formData, title: text })}
+                placeholderTextColor={colors.textSecondary}
+              />
+
+              <Text style={commonStyles.label}>Catégorie *</Text>
+              <TextInput
+                style={commonStyles.input}
+                placeholder="Ex: Politique, Économie, Jeunesse"
+                value={formData.category}
+                onChangeText={(text) => setFormData({ ...formData, category: text })}
+                placeholderTextColor={colors.textSecondary}
+              />
+
+              <Text style={commonStyles.label}>Date *</Text>
+              <TextInput
+                style={commonStyles.input}
+                placeholder="AAAA-MM-JJ"
+                value={formData.date}
+                onChangeText={(text) => setFormData({ ...formData, date: text })}
+                placeholderTextColor={colors.textSecondary}
+              />
+
+              <Text style={commonStyles.label}>URL de l&apos;image</Text>
+              <TextInput
+                style={commonStyles.input}
+                placeholder="https://exemple.com/image.jpg"
+                value={formData.image}
+                onChangeText={(text) => setFormData({ ...formData, image: text })}
+                placeholderTextColor={colors.textSecondary}
+              />
+
+              <Text style={commonStyles.label}>Contenu *</Text>
+              <TextInput
+                style={commonStyles.inputMultiline}
+                placeholder="Contenu de l'actualité..."
+                value={formData.content}
+                onChangeText={(text) => setFormData({ ...formData, content: text })}
+                multiline
+                numberOfLines={6}
+                placeholderTextColor={colors.textSecondary}
+              />
+
+              <Pressable style={buttonStyles.primary} onPress={handleSubmit}>
+                <Text style={buttonStyles.text}>
+                  {editingId ? 'Mettre à jour' : 'Ajouter'}
+                </Text>
+              </Pressable>
+
+              {editingId && (
+                <Pressable
+                  style={[buttonStyles.outline, { marginTop: 8 }]}
+                  onPress={resetForm}
+                >
+                  <Text style={buttonStyles.textOutline}>Annuler</Text>
+                </Pressable>
+              )}
+            </View>
+
+            <Text style={styles.sectionTitle}>Actualités existantes</Text>
+            {news.length > 0 ? (
+              news.map((item) => (
+                <View key={item.id} style={styles.newsItem}>
+                  <Text style={styles.newsTitle}>{item.title}</Text>
+                  <Text style={styles.newsCategory}>{item.category}</Text>
+                  <Text style={styles.newsDate}>{item.date}</Text>
+                  <View style={styles.newsActions}>
+                    <Pressable
+                      style={[styles.actionButton, styles.editButton]}
+                      onPress={() => handleEdit(item)}
+                    >
+                      <Text style={styles.actionButtonText}>Modifier</Text>
+                    </Pressable>
+                    <Pressable
+                      style={[styles.actionButton, styles.deleteButton]}
+                      onPress={() => handleDelete(item.id)}
+                    >
+                      <Text style={styles.actionButtonText}>Supprimer</Text>
+                    </Pressable>
+                  </View>
+                </View>
+              ))
+            ) : (
+              <View style={styles.emptyState}>
+                <IconSymbol name="newspaper" size={48} color={colors.textSecondary} />
+                <Text style={styles.emptyText}>Aucune actualité</Text>
+              </View>
+            )}
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+    </>
+  );
+}

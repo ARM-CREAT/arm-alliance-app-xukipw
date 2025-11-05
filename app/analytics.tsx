@@ -1,5 +1,8 @@
 
+import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { colors, commonStyles, buttonStyles } from '@/styles/commonStyles';
 import {
   View,
   Text,
@@ -9,11 +12,9 @@ import {
   Dimensions,
   Alert,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { IconSymbol } from '@/components/IconSymbol';
 import { Stack, router } from 'expo-router';
-import { colors, commonStyles, buttonStyles } from '@/styles/commonStyles';
-import { useAuth } from '@/contexts/AuthContext';
+import { useContent } from '@/contexts/ContentContext';
 
 interface AnalyticsData {
   totalMembers: number;
@@ -28,26 +29,110 @@ interface AnalyticsData {
   pageViews: number;
 }
 
+const styles = StyleSheet.create({
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: 40,
+  },
+  header: {
+    backgroundColor: colors.primary,
+    padding: 24,
+    alignItems: 'center',
+  },
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: '800',
+    color: colors.white,
+    marginBottom: 8,
+  },
+  headerSubtitle: {
+    fontSize: 16,
+    color: colors.white,
+  },
+  statsGrid: {
+    gap: 12,
+  },
+  statCard: {
+    backgroundColor: colors.white,
+    borderRadius: 12,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: colors.border,
+    boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
+    elevation: 2,
+  },
+  statHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  statIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  statTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: colors.text,
+  },
+  statRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  statLabel: {
+    fontSize: 14,
+    color: colors.textSecondary,
+  },
+  statValue: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: colors.text,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: colors.border,
+    marginVertical: 12,
+  },
+  emptyState: {
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: colors.textSecondary,
+    marginTop: 12,
+  },
+});
+
 export default function AnalyticsScreen() {
   const { isAdmin, isLoading } = useAuth();
-  const [data, setData] = useState<AnalyticsData>({
-    totalMembers: 247,
-    newMembersThisMonth: 18,
-    totalDonations: 12450,
-    donationsThisMonth: 2340,
-    totalEvents: 15,
-    upcomingEvents: 3,
-    totalNews: 28,
-    mediaItems: 45,
-    chatMessages: 1523,
-    pageViews: 8934,
+  const { news, events, media } = useContent();
+  const [analytics, setAnalytics] = useState<AnalyticsData>({
+    totalMembers: 7,
+    newMembersThisMonth: 3,
+    totalDonations: 0,
+    donationsThisMonth: 0,
+    totalEvents: events.length,
+    upcomingEvents: events.length,
+    totalNews: news.length,
+    mediaItems: media.length,
+    chatMessages: 0,
+    pageViews: 0,
   });
 
   useEffect(() => {
     if (!isLoading && !isAdmin) {
       Alert.alert(
         'Accès refusé',
-        'Cette page est réservée aux administrateurs',
+        'Vous devez être connecté en tant qu\'administrateur',
         [
           {
             text: 'OK',
@@ -58,23 +143,37 @@ export default function AnalyticsScreen() {
     }
   }, [isAdmin, isLoading]);
 
+  useEffect(() => {
+    setAnalytics(prev => ({
+      ...prev,
+      totalEvents: events.length,
+      upcomingEvents: events.length,
+      totalNews: news.length,
+      mediaItems: media.length,
+    }));
+  }, [news, events, media]);
+
   const handleRefresh = () => {
-    Alert.alert('Actualisation', 'Les données ont été actualisées');
-    console.log('Analytics data refreshed');
+    Alert.alert('Succès', 'Données actualisées');
   };
 
   if (isLoading) {
     return (
-      <SafeAreaView style={commonStyles.container}>
-        <View style={styles.loadingContainer}>
-          <Text style={commonStyles.text}>Chargement...</Text>
-        </View>
+      <SafeAreaView style={[commonStyles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <Text style={commonStyles.text}>Chargement...</Text>
       </SafeAreaView>
     );
   }
 
   if (!isAdmin) {
-    return null;
+    return (
+      <SafeAreaView style={commonStyles.container}>
+        <View style={styles.emptyState}>
+          <IconSymbol name="lock.fill" size={48} color={colors.textSecondary} />
+          <Text style={styles.emptyText}>Accès non autorisé</Text>
+        </View>
+      </SafeAreaView>
+    );
   }
 
   return (
@@ -86,138 +185,129 @@ export default function AnalyticsScreen() {
             backgroundColor: colors.primary,
           },
           headerTintColor: colors.white,
-          presentation: 'modal',
         }}
       />
-      <SafeAreaView style={commonStyles.container} edges={['bottom']}>
+      <SafeAreaView style={[commonStyles.container, { backgroundColor: colors.background }]} edges={['bottom']}>
         <ScrollView
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.header}>
-            <IconSymbol name="chart.bar.fill" size={48} color={colors.accent} />
-            <Text style={[commonStyles.title, { color: colors.primary, marginTop: 16 }]}>
-              Tableau de bord analytique
-            </Text>
-            <Text style={[commonStyles.textSecondary, { textAlign: 'center' }]}>
-              Vue d&apos;ensemble des statistiques du parti
-            </Text>
+            <IconSymbol name="chart.bar.fill" size={64} color={colors.white} />
+            <Text style={styles.headerTitle}>Analyses</Text>
+            <Text style={styles.headerSubtitle}>Statistiques détaillées</Text>
           </View>
 
-          {/* Key Metrics */}
           <View style={commonStyles.section}>
-            <Text style={[commonStyles.subtitle, { color: colors.primary }]}>
-              Métriques clés
-            </Text>
-            <View style={styles.metricsGrid}>
-              <View style={[styles.metricCard, { backgroundColor: colors.primary }]}>
-                <IconSymbol name="person.3.fill" size={32} color={colors.white} />
-                <Text style={styles.metricValue}>{data.totalMembers}</Text>
-                <Text style={styles.metricLabel}>Membres totaux</Text>
-                <View style={styles.metricBadge}>
-                  <IconSymbol name="arrow.up" size={12} color={colors.success} />
-                  <Text style={styles.metricBadgeText}>+{data.newMembersThisMonth} ce mois</Text>
+            <View style={styles.statsGrid}>
+              <View style={styles.statCard}>
+                <View style={styles.statHeader}>
+                  <View style={[styles.statIcon, { backgroundColor: colors.primary }]}>
+                    <IconSymbol name="person.3.fill" size={24} color={colors.white} />
+                  </View>
+                  <Text style={styles.statTitle}>Membres</Text>
+                </View>
+                <View style={styles.statRow}>
+                  <Text style={styles.statLabel}>Total</Text>
+                  <Text style={styles.statValue}>{analytics.totalMembers}</Text>
+                </View>
+                <View style={styles.divider} />
+                <View style={styles.statRow}>
+                  <Text style={styles.statLabel}>Ce mois</Text>
+                  <Text style={[styles.statValue, { fontSize: 18, color: colors.success }]}>
+                    +{analytics.newMembersThisMonth}
+                  </Text>
                 </View>
               </View>
 
-              <View style={[styles.metricCard, { backgroundColor: colors.accent }]}>
-                <IconSymbol name="eurosign.circle.fill" size={32} color={colors.white} />
-                <Text style={styles.metricValue}>{data.totalDonations}€</Text>
-                <Text style={styles.metricLabel}>Dons totaux</Text>
-                <View style={styles.metricBadge}>
-                  <IconSymbol name="arrow.up" size={12} color={colors.success} />
-                  <Text style={styles.metricBadgeText}>+{data.donationsThisMonth}€ ce mois</Text>
+              <View style={styles.statCard}>
+                <View style={styles.statHeader}>
+                  <View style={[styles.statIcon, { backgroundColor: colors.accent }]}>
+                    <IconSymbol name="heart.fill" size={24} color={colors.white} />
+                  </View>
+                  <Text style={styles.statTitle}>Dons</Text>
+                </View>
+                <View style={styles.statRow}>
+                  <Text style={styles.statLabel}>Total</Text>
+                  <Text style={styles.statValue}>{analytics.totalDonations}€</Text>
+                </View>
+                <View style={styles.divider} />
+                <View style={styles.statRow}>
+                  <Text style={styles.statLabel}>Ce mois</Text>
+                  <Text style={[styles.statValue, { fontSize: 18, color: colors.success }]}>
+                    +{analytics.donationsThisMonth}€
+                  </Text>
                 </View>
               </View>
 
-              <View style={[styles.metricCard, { backgroundColor: colors.highlight }]}>
-                <IconSymbol name="calendar" size={32} color={colors.white} />
-                <Text style={styles.metricValue}>{data.totalEvents}</Text>
-                <Text style={styles.metricLabel}>Événements</Text>
-                <View style={styles.metricBadge}>
-                  <Text style={styles.metricBadgeText}>{data.upcomingEvents} à venir</Text>
+              <View style={styles.statCard}>
+                <View style={styles.statHeader}>
+                  <View style={[styles.statIcon, { backgroundColor: colors.highlight }]}>
+                    <IconSymbol name="calendar" size={24} color={colors.white} />
+                  </View>
+                  <Text style={styles.statTitle}>Événements</Text>
+                </View>
+                <View style={styles.statRow}>
+                  <Text style={styles.statLabel}>Total</Text>
+                  <Text style={styles.statValue}>{analytics.totalEvents}</Text>
+                </View>
+                <View style={styles.divider} />
+                <View style={styles.statRow}>
+                  <Text style={styles.statLabel}>À venir</Text>
+                  <Text style={[styles.statValue, { fontSize: 18, color: colors.accent }]}>
+                    {analytics.upcomingEvents}
+                  </Text>
                 </View>
               </View>
 
-              <View style={[styles.metricCard, { backgroundColor: colors.secondary }]}>
-                <IconSymbol name="newspaper" size={32} color={colors.black} />
-                <Text style={[styles.metricValue, { color: colors.black }]}>{data.totalNews}</Text>
-                <Text style={[styles.metricLabel, { color: colors.black }]}>Articles</Text>
+              <View style={styles.statCard}>
+                <View style={styles.statHeader}>
+                  <View style={[styles.statIcon, { backgroundColor: colors.secondary }]}>
+                    <IconSymbol name="newspaper" size={24} color={colors.black} />
+                  </View>
+                  <Text style={styles.statTitle}>Actualités</Text>
+                </View>
+                <View style={styles.statRow}>
+                  <Text style={styles.statLabel}>Total</Text>
+                  <Text style={styles.statValue}>{analytics.totalNews}</Text>
+                </View>
+              </View>
+
+              <View style={styles.statCard}>
+                <View style={styles.statHeader}>
+                  <View style={[styles.statIcon, { backgroundColor: colors.primary }]}>
+                    <IconSymbol name="photo.fill" size={24} color={colors.white} />
+                  </View>
+                  <Text style={styles.statTitle}>Médias</Text>
+                </View>
+                <View style={styles.statRow}>
+                  <Text style={styles.statLabel}>Total</Text>
+                  <Text style={styles.statValue}>{analytics.mediaItems}</Text>
+                </View>
+              </View>
+
+              <View style={styles.statCard}>
+                <View style={styles.statHeader}>
+                  <View style={[styles.statIcon, { backgroundColor: colors.accent }]}>
+                    <IconSymbol name="bubble.left.and.bubble.right.fill" size={24} color={colors.white} />
+                  </View>
+                  <Text style={styles.statTitle}>Messages du chat</Text>
+                </View>
+                <View style={styles.statRow}>
+                  <Text style={styles.statLabel}>Total</Text>
+                  <Text style={styles.statValue}>{analytics.chatMessages}</Text>
+                </View>
               </View>
             </View>
           </View>
 
-          {/* Engagement Metrics */}
-          <View style={commonStyles.section}>
-            <Text style={[commonStyles.subtitle, { color: colors.primary }]}>
-              Engagement
-            </Text>
-            <View style={styles.engagementCard}>
-              <View style={styles.engagementRow}>
-                <View style={styles.engagementIcon}>
-                  <IconSymbol name="photo.fill" size={24} color={colors.primary} />
-                </View>
-                <View style={styles.engagementInfo}>
-                  <Text style={styles.engagementLabel}>Médias</Text>
-                  <Text style={styles.engagementValue}>{data.mediaItems} éléments</Text>
-                </View>
-              </View>
-
-              <View style={styles.divider} />
-
-              <View style={styles.engagementRow}>
-                <View style={styles.engagementIcon}>
-                  <IconSymbol name="bubble.left.and.bubble.right.fill" size={24} color={colors.accent} />
-                </View>
-                <View style={styles.engagementInfo}>
-                  <Text style={styles.engagementLabel}>Messages du chat</Text>
-                  <Text style={styles.engagementValue}>{data.chatMessages} messages</Text>
-                </View>
-              </View>
-
-              <View style={styles.divider} />
-
-              <View style={styles.engagementRow}>
-                <View style={styles.engagementIcon}>
-                  <IconSymbol name="eye.fill" size={24} color={colors.highlight} />
-                </View>
-                <View style={styles.engagementInfo}>
-                  <Text style={styles.engagementLabel}>Vues de page</Text>
-                  <Text style={styles.engagementValue}>{data.pageViews} vues</Text>
-                </View>
-              </View>
-            </View>
-          </View>
-
-          {/* Growth Chart Placeholder */}
-          <View style={commonStyles.section}>
-            <Text style={[commonStyles.subtitle, { color: colors.primary }]}>
-              Croissance des membres
-            </Text>
-            <View style={styles.chartPlaceholder}>
-              <IconSymbol name="chart.line.uptrend.xyaxis" size={64} color={colors.primary} />
-              <Text style={styles.chartText}>
-                Graphique de croissance
-              </Text>
-              <Text style={[commonStyles.textSecondary, { textAlign: 'center' }]}>
-                +{data.newMembersThisMonth} nouveaux membres ce mois
-              </Text>
-            </View>
-          </View>
-
-          {/* Actions */}
           <View style={commonStyles.section}>
             <Pressable style={buttonStyles.primary} onPress={handleRefresh}>
               <IconSymbol name="arrow.clockwise" size={20} color={colors.white} />
-              <Text style={[buttonStyles.text, { marginLeft: 8 }]}>Actualiser les données</Text>
-            </Pressable>
-
-            <Pressable
-              style={[buttonStyles.outline, { marginTop: 12 }]}
-              onPress={() => router.back()}
-            >
-              <Text style={buttonStyles.textOutline}>Retour</Text>
+              <Text style={[buttonStyles.text, { marginLeft: 8 }]}>
+                Actualiser les données
+              </Text>
             </Pressable>
           </View>
         </ScrollView>
@@ -225,119 +315,3 @@ export default function AnalyticsScreen() {
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingBottom: 40,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  header: {
-    alignItems: 'center',
-    paddingVertical: 24,
-    paddingHorizontal: 20,
-  },
-  metricsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-    marginTop: 12,
-  },
-  metricCard: {
-    flex: 1,
-    minWidth: '47%',
-    borderRadius: 12,
-    padding: 16,
-    alignItems: 'center',
-  },
-  metricValue: {
-    fontSize: 32,
-    fontWeight: '900',
-    color: colors.white,
-    marginTop: 12,
-  },
-  metricLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.white,
-    marginTop: 4,
-    textAlign: 'center',
-  },
-  metricBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    borderRadius: 12,
-    marginTop: 8,
-  },
-  metricBadgeText: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: colors.white,
-    marginLeft: 4,
-  },
-  engagementCard: {
-    backgroundColor: colors.white,
-    borderRadius: 12,
-    padding: 16,
-    marginTop: 12,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  engagementRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  engagementIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: colors.card,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 16,
-  },
-  engagementInfo: {
-    flex: 1,
-  },
-  engagementLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.text,
-  },
-  engagementValue: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: colors.primary,
-    marginTop: 2,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: colors.border,
-    marginVertical: 12,
-  },
-  chartPlaceholder: {
-    backgroundColor: colors.white,
-    borderRadius: 12,
-    padding: 32,
-    marginTop: 12,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  chartText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.text,
-    marginTop: 12,
-    marginBottom: 8,
-  },
-});
