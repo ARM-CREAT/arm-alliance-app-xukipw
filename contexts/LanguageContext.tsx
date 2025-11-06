@@ -515,6 +515,7 @@ const translations: Record<Language, Record<string, string>> = {
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [language, setLanguageState] = useState<Language>('fr');
+  const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
     loadLanguage();
@@ -522,20 +523,40 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
   const loadLanguage = async () => {
     try {
+      console.log('Loading language from AsyncStorage...');
       const stored = await AsyncStorage.getItem(LANGUAGE_KEY);
+      console.log('Stored language:', stored);
+      
       if (stored && ['fr', 'es', 'bm'].includes(stored)) {
         setLanguageState(stored as Language);
+        console.log('Language set to:', stored);
+      } else {
+        // Default to French if no valid language is stored
+        console.log('No valid language stored, defaulting to French');
+        setLanguageState('fr');
+        await AsyncStorage.setItem(LANGUAGE_KEY, 'fr');
       }
     } catch (error) {
-      console.error('Error loading language:', error);
+      console.error('Error loading language, defaulting to French:', error);
+      // Default to French on error
+      setLanguageState('fr');
+      try {
+        await AsyncStorage.setItem(LANGUAGE_KEY, 'fr');
+      } catch (saveError) {
+        console.error('Error saving default language:', saveError);
+      }
+    } finally {
+      setIsInitialized(true);
+      console.log('Language initialization complete');
     }
   };
 
   const setLanguage = async (lang: Language) => {
     try {
+      console.log('Setting language to:', lang);
       await AsyncStorage.setItem(LANGUAGE_KEY, lang);
       setLanguageState(lang);
-      console.log('Language changed to:', lang);
+      console.log('Language changed successfully to:', lang);
     } catch (error) {
       console.error('Error saving language:', error);
     }
@@ -549,6 +570,11 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     }
     return translation;
   };
+
+  // Don't render children until language is initialized
+  if (!isInitialized) {
+    return null;
+  }
 
   return (
     <LanguageContext.Provider value={{ language, setLanguage, t }}>
