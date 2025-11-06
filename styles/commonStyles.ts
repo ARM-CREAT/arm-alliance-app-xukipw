@@ -1,5 +1,5 @@
 
-import { StyleSheet, ViewStyle, TextStyle, useColorScheme } from 'react-native';
+import { StyleSheet } from 'react-native';
 
 // Light mode colors
 export const lightColors = {
@@ -38,12 +38,6 @@ export const darkColors = {
 // Default to light colors for backwards compatibility
 export const colors = lightColors;
 
-// Hook to get colors based on color scheme
-export const useThemeColors = () => {
-  const colorScheme = useColorScheme();
-  return colorScheme === 'dark' ? darkColors : lightColors;
-};
-
 export const buttonStyles = StyleSheet.create({
   primary: {
     backgroundColor: lightColors.primary,
@@ -60,6 +54,12 @@ export const buttonStyles = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  secondaryText: {
+    color: lightColors.black,
+    fontSize: 16,
+    fontWeight: '600',
+    marginLeft: 8,
   },
   accent: {
     backgroundColor: lightColors.accent,
