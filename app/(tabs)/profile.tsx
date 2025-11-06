@@ -1,52 +1,112 @@
 
 import React, { useState } from "react";
-import { ScrollView, StyleSheet, View, Text, Image, Platform, Pressable, Linking, Alert } from "react-native";
+import { ScrollView, StyleSheet, View, Text, Image, Platform, Pressable, Linking, Alert, useColorScheme } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { lightColors, darkColors, commonStyles } from "@/styles/commonStyles";
 import { Stack } from "expo-router";
-import { IconSymbol } from "@/components/IconSymbol";
-import { colors, commonStyles } from "@/styles/commonStyles";
-import Animated, { FadeInDown, FadeIn } from 'react-native-reanimated';
-import { useLanguage } from "@/contexts/LanguageContext";
-import { LanguageSelector } from "@/components/LanguageSelector";
 import { useContent } from "@/contexts/ContentContext";
+import Animated, { FadeInDown, FadeIn } from 'react-native-reanimated';
+import { IconSymbol } from "@/components/IconSymbol";
+import { LanguageSelector } from "@/components/LanguageSelector";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function ProfileScreen() {
   const { t } = useLanguage();
+  const [showLanguageSelector, setShowLanguageSelector] = useState(false);
   const { members } = useContent();
   const [expandedMember, setExpandedMember] = useState<string | null>(null);
-  const [showLanguageSelector, setShowLanguageSelector] = useState(false);
+  const colorScheme = useColorScheme();
+  const colors = colorScheme === 'dark' ? darkColors : lightColors;
 
   const handleCall = (phone: string, name: string) => {
-    if (!phone) {
-      Alert.alert(t('common.unavailable'), t('profile.error.noPhone'));
+    if (!phone || phone === '......') {
+      Alert.alert(
+        t('profile.unavailable'),
+        t('profile.phone.unavailable')
+      );
       return;
     }
-    const phoneNumber = phone.replace(/\s/g, '');
-    Linking.openURL(`tel:${phoneNumber}`).catch(() => {
-      Alert.alert(t('common.error'), t('profile.error.cannotCall'));
-    });
+    
+    Alert.alert(
+      t('profile.call'),
+      `${t('profile.call.confirm')} ${name}?`,
+      [
+        { text: t('profile.cancel'), style: 'cancel' },
+        {
+          text: t('profile.call'),
+          onPress: () => {
+            const phoneUrl = `tel:${phone}`;
+            Linking.canOpenURL(phoneUrl)
+              .then((supported) => {
+                if (supported) {
+                  return Linking.openURL(phoneUrl);
+                } else {
+                  Alert.alert(t('profile.error'), t('profile.call.error'));
+                }
+              })
+              .catch((err) => {
+                console.error('Error opening phone:', err);
+                Alert.alert(t('profile.error'), t('profile.call.error'));
+              });
+          },
+        },
+      ]
+    );
   };
 
   const handleMessage = (phone: string, name: string) => {
-    if (!phone) {
-      Alert.alert(t('common.unavailable'), t('profile.error.noPhone'));
+    if (!phone || phone === '......') {
+      Alert.alert(
+        t('profile.unavailable'),
+        t('profile.phone.unavailable')
+      );
       return;
     }
-    const phoneNumber = phone.replace(/\s/g, '');
-    Linking.openURL(`sms:${phoneNumber}`).catch(() => {
-      Alert.alert(t('common.error'), t('profile.error.cannotMessage'));
-    });
+
+    const smsUrl = Platform.OS === 'ios' ? `sms:${phone}` : `sms:${phone}`;
+    Linking.canOpenURL(smsUrl)
+      .then((supported) => {
+        if (supported) {
+          return Linking.openURL(smsUrl);
+        } else {
+          Alert.alert(t('profile.error'), t('profile.message.error'));
+        }
+      })
+      .catch((err) => {
+        console.error('Error opening SMS:', err);
+        Alert.alert(t('profile.error'), t('profile.message.error'));
+      });
   };
 
   const handleEmail = (email: string, name: string) => {
-    Linking.openURL(`mailto:${email}?subject=Contact depuis l'application ARM`).catch(() => {
-      Alert.alert(t('common.error'), t('profile.error.cannotEmail'));
-    });
+    if (!email) {
+      Alert.alert(
+        t('profile.unavailable'),
+        t('profile.email.unavailable')
+      );
+      return;
+    }
+
+    const emailUrl = `mailto:${email}`;
+    Linking.canOpenURL(emailUrl)
+      .then((supported) => {
+        if (supported) {
+          return Linking.openURL(emailUrl);
+        } else {
+          Alert.alert(t('profile.error'), t('profile.email.error'));
+        }
+      })
+      .catch((err) => {
+        console.error('Error opening email:', err);
+        Alert.alert(t('profile.error'), t('profile.email.error'));
+      });
   };
 
   const toggleExpand = (memberId: string) => {
     setExpandedMember(expandedMember === memberId ? null : memberId);
   };
+
+  const sortedMembers = [...members].sort((a, b) => a.order - b.order);
 
   return (
     <>
@@ -66,9 +126,9 @@ export default function ProfileScreen() {
           }}
         />
       )}
-      <SafeAreaView style={commonStyles.container} edges={['top']}>
+      <SafeAreaView style={[commonStyles.container, { backgroundColor: colors.background }]} edges={['top']}>
         <ScrollView 
-          style={styles.scrollView}
+          style={[styles.scrollView, { backgroundColor: colors.background }]}
           contentContainerStyle={[
             styles.scrollContent,
             Platform.OS !== 'ios' && styles.scrollContentWithTabBar
@@ -79,174 +139,107 @@ export default function ProfileScreen() {
           {Platform.OS !== 'ios' && (
             <View style={styles.languageButtonContainer}>
               <Pressable 
-                style={styles.languageButton}
+                style={[styles.languageButton, { backgroundColor: colors.card, borderColor: colors.border }]}
                 onPress={() => setShowLanguageSelector(true)}
               >
                 <IconSymbol name="globe" size={20} color={colors.primary} />
-                <Text style={styles.languageButtonText}>{t('language.title')}</Text>
+                <Text style={[styles.languageButtonText, { color: colors.primary }]}>{t('language.title')}</Text>
               </Pressable>
             </View>
           )}
 
-          <Animated.View entering={FadeIn.duration(600)} style={styles.header}>
-            <Text style={[commonStyles.title, { color: colors.primary }]}>
-              {t('profile.header.title')}
-            </Text>
-            <Text style={[commonStyles.textSecondary, { textAlign: 'center' }]}>
-              {t('profile.header.subtitle')}
-            </Text>
-          </Animated.View>
+          {/* Header */}
+          <View style={[styles.header, { backgroundColor: colors.primary }]}>
+            <IconSymbol name="person.3.fill" size={48} color={colors.white} />
+            <Text style={[styles.headerTitle, { color: colors.white }]}>{t('profile.title')}</Text>
+            <Text style={[styles.headerSubtitle, { color: colors.white }]}>{t('profile.subtitle')}</Text>
+          </View>
 
-          <View style={commonStyles.section}>
-            {members.map((member, index) => (
-              <Animated.View 
-                key={member.id} 
-                entering={FadeInDown.delay(index * 100).duration(500)}
+          {/* Members List */}
+          <View style={[commonStyles.section, { marginTop: 24 }]}>
+            {sortedMembers.map((member, index) => (
+              <Animated.View
+                key={member.id}
+                entering={FadeInDown.delay(index * 100).springify()}
               >
-                <Pressable 
-                  style={styles.memberCard}
+                <Pressable
+                  style={[styles.memberCard, { backgroundColor: colors.card, borderColor: colors.border }]}
                   onPress={() => toggleExpand(member.id)}
                 >
-                  <Image 
-                    source={require('@/assets/images/5aab13fd-fe57-45c4-bde2-69d0cd5cb2b6.jpeg')}
-                    style={styles.memberImage}
-                    resizeMode="contain"
-                  />
-                  <View style={styles.memberInfo}>
-                    <View style={styles.nameRow}>
-                      <Text style={styles.memberName}>{member.name}</Text>
-                      <IconSymbol 
-                        name={expandedMember === member.id ? "chevron.up" : "chevron.down"} 
-                        size={20} 
-                        color={colors.primary} 
-                      />
+                  <View style={styles.memberHeader}>
+                    <Image
+                      source={{ uri: member.image }}
+                      style={styles.memberImage}
+                      resizeMode="cover"
+                    />
+                    <View style={styles.memberInfo}>
+                      <Text style={[styles.memberName, { color: colors.text }]}>{member.name}</Text>
+                      <Text style={[styles.memberRole, { color: colors.primary }]}>{member.role}</Text>
+                      <Text style={[styles.memberProfession, { color: colors.textSecondary }]}>{member.profession}</Text>
                     </View>
-                    <View style={[styles.roleBadge, { backgroundColor: colors.primary }]}>
-                      <Text style={styles.roleText}>{t(member.roleKey)}</Text>
-                    </View>
-                    
-                    {member.profession ? (
-                      <View style={styles.infoRow}>
-                        <IconSymbol name="briefcase.fill" size={16} color={colors.textSecondary} />
-                        <Text style={styles.infoText}>{member.profession}</Text>
-                      </View>
-                    ) : null}
-                    
-                    <View style={styles.infoRow}>
-                      <IconSymbol name="location.fill" size={16} color={colors.textSecondary} />
-                      <Text style={styles.infoText}>{member.location}</Text>
-                    </View>
-                    
-                    {member.phone ? (
-                      <View style={styles.infoRow}>
-                        <IconSymbol name="phone.fill" size={16} color={colors.primary} />
-                        <Text style={[styles.infoText, { color: colors.primary, fontWeight: '600' }]}>
-                          {member.phone}
-                        </Text>
-                      </View>
-                    ) : null}
-
-                    {expandedMember === member.id && (
-                      <Animated.View entering={FadeInDown.duration(300)} style={styles.expandedContent}>
-                        <View style={styles.divider} />
-                        
-                        {/* Contact Actions */}
-                        <View style={styles.actionsContainer}>
-                          <Text style={styles.actionsTitle}>{t('profile.actions.title')}</Text>
-                          <View style={styles.actionButtons}>
-                            {member.phone && (
-                              <>
-                                <Pressable 
-                                  style={[styles.actionButton, { backgroundColor: colors.primary }]}
-                                  onPress={() => handleCall(member.phone, member.name)}
-                                >
-                                  <IconSymbol name="phone.fill" size={20} color={colors.white} />
-                                  <Text style={styles.actionButtonText}>{t('profile.action.call')}</Text>
-                                </Pressable>
-                                
-                                <Pressable 
-                                  style={[styles.actionButton, { backgroundColor: colors.accent }]}
-                                  onPress={() => handleMessage(member.phone, member.name)}
-                                >
-                                  <IconSymbol name="message.fill" size={20} color={colors.white} />
-                                  <Text style={styles.actionButtonText}>{t('profile.action.message')}</Text>
-                                </Pressable>
-                              </>
-                            )}
-                            
-                            <Pressable 
-                              style={[styles.actionButton, { backgroundColor: colors.secondary }]}
-                              onPress={() => handleEmail(member.email, member.name)}
-                            >
-                              <IconSymbol name="envelope.fill" size={20} color={colors.white} />
-                              <Text style={styles.actionButtonText}>{t('profile.action.email')}</Text>
-                            </Pressable>
-                          </View>
-                        </View>
-
-                        {/* Additional Info */}
-                        <View style={styles.additionalInfo}>
-                          <View style={styles.infoRow}>
-                            <IconSymbol name="envelope.fill" size={16} color={colors.textSecondary} />
-                            <Text style={styles.infoText}>{member.email}</Text>
-                          </View>
-                        </View>
-                      </Animated.View>
-                    )}
+                    <IconSymbol
+                      name={expandedMember === member.id ? "chevron.up" : "chevron.down"}
+                      size={24}
+                      color={colors.textSecondary}
+                    />
                   </View>
+
+                  {expandedMember === member.id && (
+                    <Animated.View entering={FadeIn.duration(300)} style={styles.memberDetails}>
+                      <View style={[styles.divider, { backgroundColor: colors.border }]} />
+                      
+                      <View style={styles.detailRow}>
+                        <IconSymbol name="mappin.circle.fill" size={20} color={colors.primary} />
+                        <Text style={[styles.detailText, { color: colors.text }]}>{member.location}</Text>
+                      </View>
+
+                      {member.phone && member.phone !== '......' && (
+                        <View style={styles.detailRow}>
+                          <IconSymbol name="phone.fill" size={20} color={colors.primary} />
+                          <Text style={[styles.detailText, { color: colors.text }]}>{member.phone}</Text>
+                        </View>
+                      )}
+
+                      {member.email && (
+                        <View style={styles.detailRow}>
+                          <IconSymbol name="envelope.fill" size={20} color={colors.primary} />
+                          <Text style={[styles.detailText, { color: colors.text }]}>{member.email}</Text>
+                        </View>
+                      )}
+
+                      <View style={styles.actionButtons}>
+                        <Pressable
+                          style={[styles.actionButton, { backgroundColor: colors.primary }]}
+                          onPress={() => handleCall(member.phone, member.name)}
+                        >
+                          <IconSymbol name="phone.fill" size={18} color={colors.white} />
+                          <Text style={[styles.actionButtonText, { color: colors.white }]}>{t('profile.call')}</Text>
+                        </Pressable>
+
+                        <Pressable
+                          style={[styles.actionButton, { backgroundColor: colors.accent }]}
+                          onPress={() => handleMessage(member.phone, member.name)}
+                        >
+                          <IconSymbol name="message.fill" size={18} color={colors.white} />
+                          <Text style={[styles.actionButtonText, { color: colors.white }]}>{t('profile.message')}</Text>
+                        </Pressable>
+
+                        {member.email && (
+                          <Pressable
+                            style={[styles.actionButton, { backgroundColor: colors.highlight }]}
+                            onPress={() => handleEmail(member.email, member.name)}
+                          >
+                            <IconSymbol name="envelope.fill" size={18} color={colors.white} />
+                            <Text style={[styles.actionButtonText, { color: colors.white }]}>{t('profile.email')}</Text>
+                          </Pressable>
+                        )}
+                      </View>
+                    </Animated.View>
+                  )}
                 </Pressable>
               </Animated.View>
             ))}
           </View>
-
-          {/* Party Values */}
-          <Animated.View 
-            entering={FadeInDown.delay(700).duration(600)}
-            style={[commonStyles.section, styles.valuesSection]}
-          >
-            <Text style={[commonStyles.subtitle, { color: colors.primary, textAlign: 'center' }]}>
-              {t('profile.values.title')}
-            </Text>
-            <View style={styles.valuesContainer}>
-              <View style={styles.valueCard}>
-                <IconSymbol name="heart.fill" size={32} color={colors.primary} />
-                <Text style={styles.valueTitle}>{t('profile.value.fraternity')}</Text>
-                <Text style={styles.valueDescription}>
-                  {t('profile.value.fraternity.desc')}
-                </Text>
-              </View>
-              <View style={styles.valueCard}>
-                <IconSymbol name="hand.raised.fill" size={32} color={colors.accent} />
-                <Text style={styles.valueTitle}>{t('profile.value.liberty')}</Text>
-                <Text style={styles.valueDescription}>
-                  {t('profile.value.liberty.desc')}
-                </Text>
-              </View>
-              <View style={styles.valueCard}>
-                <IconSymbol name="equal.circle.fill" size={32} color={colors.secondary} />
-                <Text style={styles.valueTitle}>{t('profile.value.equality')}</Text>
-                <Text style={styles.valueDescription}>
-                  {t('profile.value.equality.desc')}
-                </Text>
-              </View>
-            </View>
-          </Animated.View>
-
-          {/* Party Headquarters */}
-          <Animated.View 
-            entering={FadeInDown.delay(800).duration(600)}
-            style={[commonStyles.section, styles.headquartersSection]}
-          >
-            <Text style={[commonStyles.subtitle, { color: colors.primary, textAlign: 'center', marginBottom: 16 }]}>
-              {t('profile.headquarters.title')}
-            </Text>
-            <View style={styles.headquartersCard}>
-              <IconSymbol name="building.2.fill" size={40} color={colors.primary} />
-              <Text style={styles.headquartersAddress}>
-                {t('profile.headquarters.address')}
-              </Text>
-            </View>
-          </Animated.View>
         </ScrollView>
       </SafeAreaView>
 
@@ -276,175 +269,109 @@ const styles = StyleSheet.create({
   languageButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.white,
     paddingVertical: 10,
     paddingHorizontal: 16,
     borderRadius: 20,
     alignSelf: 'flex-end',
-    boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
     elevation: 2,
     borderWidth: 1,
-    borderColor: colors.border,
   },
   languageButtonText: {
     fontSize: 14,
     fontWeight: '600',
-    color: colors.primary,
     marginLeft: 6,
   },
   header: {
-    alignItems: 'center',
-    paddingVertical: 24,
+    paddingVertical: 40,
     paddingHorizontal: 20,
-    backgroundColor: colors.card,
+    alignItems: 'center',
+  },
+  headerTitle: {
+    fontSize: 32,
+    fontWeight: '900',
+    marginTop: 16,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  headerSubtitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    textAlign: 'center',
   },
   memberCard: {
-    backgroundColor: colors.white,
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
     borderWidth: 1,
-    borderColor: colors.border,
-    boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
-    elevation: 3,
   },
-  memberImage: {
-    width: '100%',
-    height: 200,
-    borderRadius: 8,
-    marginBottom: 16,
-    backgroundColor: colors.card,
-  },
-  memberInfo: {
-    gap: 8,
-  },
-  nameRow: {
+  memberHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
   },
+  memberImage: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    marginRight: 12,
+  },
+  memberInfo: {
+    flex: 1,
+  },
   memberName: {
-    fontSize: 22,
+    fontSize: 18,
     fontWeight: '700',
-    color: colors.text,
-    flex: 1,
+    marginBottom: 4,
   },
-  roleBadge: {
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 16,
-    alignSelf: 'flex-start',
-    marginBottom: 8,
-  },
-  roleText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: colors.white,
-  },
-  infoRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 8,
-  },
-  infoText: {
+  memberRole: {
     fontSize: 14,
-    color: colors.textSecondary,
-    flex: 1,
-    lineHeight: 20,
+    fontWeight: '600',
+    marginBottom: 2,
   },
-  expandedContent: {
-    marginTop: 12,
+  memberProfession: {
+    fontSize: 13,
+  },
+  memberDetails: {
+    marginTop: 16,
   },
   divider: {
     height: 1,
-    backgroundColor: colors.border,
-    marginVertical: 12,
-  },
-  actionsContainer: {
     marginBottom: 16,
   },
-  actionsTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.text,
+  detailRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 12,
+  },
+  detailText: {
+    fontSize: 14,
+    marginLeft: 10,
+    flex: 1,
   },
   actionButtons: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
+    marginTop: 16,
   },
   actionButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
     paddingVertical: 10,
     paddingHorizontal: 16,
     borderRadius: 8,
-    boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
-    elevation: 2,
+    gap: 6,
   },
   actionButtonText: {
     fontSize: 14,
     fontWeight: '600',
-    color: colors.white,
-  },
-  additionalInfo: {
-    gap: 8,
-  },
-  valuesSection: {
-    backgroundColor: colors.card,
-    paddingVertical: 32,
-    marginTop: 16,
-  },
-  valuesContainer: {
-    marginTop: 20,
-    gap: 16,
-  },
-  valueCard: {
-    backgroundColor: colors.white,
-    borderRadius: 12,
-    padding: 20,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: colors.border,
-    boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
-    elevation: 2,
-  },
-  valueTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: colors.text,
-    marginTop: 12,
-    marginBottom: 8,
-  },
-  valueDescription: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    lineHeight: 20,
-  },
-  headquartersSection: {
-    backgroundColor: colors.white,
-    paddingVertical: 32,
-    marginTop: 16,
-  },
-  headquartersCard: {
-    backgroundColor: colors.card,
-    borderRadius: 12,
-    padding: 24,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: colors.border,
-    boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
-    elevation: 2,
-  },
-  headquartersAddress: {
-    fontSize: 16,
-    color: colors.text,
-    textAlign: 'center',
-    lineHeight: 24,
-    marginTop: 16,
-    fontWeight: '500',
   },
 });

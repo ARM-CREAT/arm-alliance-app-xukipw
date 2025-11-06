@@ -1,9 +1,9 @@
 
 import React, { useState } from "react";
 import { Stack } from "expo-router";
-import { ScrollView, StyleSheet, View, Text, Image, Pressable, Platform, Alert } from "react-native";
+import { ScrollView, StyleSheet, View, Text, Image, Pressable, Platform, useColorScheme } from "react-native";
 import { IconSymbol } from "@/components/IconSymbol";
-import { colors, commonStyles, buttonStyles } from "@/styles/commonStyles";
+import { lightColors, darkColors, commonStyles, buttonStyles } from "@/styles/commonStyles";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Link, router } from "expo-router";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -12,6 +12,8 @@ import { LanguageSelector } from "@/components/LanguageSelector";
 export default function HomeScreen() {
   const { t } = useLanguage();
   const [showLanguageSelector, setShowLanguageSelector] = useState(false);
+  const colorScheme = useColorScheme();
+  const colors = colorScheme === 'dark' ? darkColors : lightColors;
 
   const handleDonation = () => {
     router.push('/donations');
@@ -37,7 +39,7 @@ export default function HomeScreen() {
       )}
       <SafeAreaView style={[commonStyles.container, { backgroundColor: colors.background }]} edges={['top']}>
         <ScrollView 
-          style={styles.scrollView}
+          style={[styles.scrollView, { backgroundColor: colors.background }]}
           contentContainerStyle={[
             styles.scrollContent,
             Platform.OS !== 'ios' && styles.scrollContentWithTabBar
@@ -48,71 +50,71 @@ export default function HomeScreen() {
           {Platform.OS !== 'ios' && (
             <View style={styles.languageButtonContainer}>
               <Pressable 
-                style={styles.languageButton}
+                style={[styles.languageButton, { backgroundColor: colors.card, borderColor: colors.border }]}
                 onPress={() => setShowLanguageSelector(true)}
               >
                 <IconSymbol name="globe" size={20} color={colors.primary} />
-                <Text style={styles.languageButtonText}>{t('language.title')}</Text>
+                <Text style={[styles.languageButtonText, { color: colors.primary }]}>{t('language.title')}</Text>
               </Pressable>
             </View>
           )}
 
           {/* Hero Section with Logo */}
-          <View style={styles.heroSection}>
+          <View style={[styles.heroSection, { backgroundColor: colors.primary }]}>
             <Image
               source={require('@/assets/images/985330b5-79d1-46f0-a940-6a9b43f3f4ea.jpeg')}
-              style={styles.logo}
+              style={[styles.logo, { backgroundColor: colors.white }]}
               resizeMode="contain"
             />
-            <Text style={styles.heroTitle}>{t('home.title')}</Text>
-            <Text style={styles.heroSubtitle}>{t('home.subtitle')}</Text>
-            <View style={styles.mottoContainer}>
-              <Text style={styles.motto}>{t('home.motto')}</Text>
+            <Text style={[styles.heroTitle, { color: colors.white }]}>{t('home.title')}</Text>
+            <Text style={[styles.heroSubtitle, { color: colors.white }]}>{t('home.subtitle')}</Text>
+            <View style={[styles.mottoContainer, { backgroundColor: colors.secondary }]}>
+              <Text style={[styles.motto, { color: colors.black }]}>{t('home.motto')}</Text>
             </View>
           </View>
 
           {/* Political Program Section */}
           <View style={[commonStyles.section, styles.programSection]}>
             <Text style={[commonStyles.subtitle, { color: colors.primary }]}>{t('home.program.title')}</Text>
-            <View style={commonStyles.cardWhite}>
-              <Text style={commonStyles.text}>
+            <View style={[commonStyles.cardWhite, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              <Text style={[commonStyles.text, { color: colors.text }]}>
                 {t('home.program.intro')}
               </Text>
               <View style={styles.programPoint}>
                 <IconSymbol name="checkmark.circle.fill" size={20} color={colors.primary} />
-                <Text style={styles.programPointText}>{t('home.program.point1')}</Text>
+                <Text style={[styles.programPointText, { color: colors.text }]}>{t('home.program.point1')}</Text>
               </View>
               <View style={styles.programPoint}>
                 <IconSymbol name="checkmark.circle.fill" size={20} color={colors.primary} />
-                <Text style={styles.programPointText}>{t('home.program.point2')}</Text>
+                <Text style={[styles.programPointText, { color: colors.text }]}>{t('home.program.point2')}</Text>
               </View>
               <View style={styles.programPoint}>
                 <IconSymbol name="checkmark.circle.fill" size={20} color={colors.primary} />
-                <Text style={styles.programPointText}>{t('home.program.point3')}</Text>
+                <Text style={[styles.programPointText, { color: colors.text }]}>{t('home.program.point3')}</Text>
               </View>
               <View style={styles.programPoint}>
                 <IconSymbol name="checkmark.circle.fill" size={20} color={colors.primary} />
-                <Text style={styles.programPointText}>{t('home.program.point4')}</Text>
+                <Text style={[styles.programPointText, { color: colors.text }]}>{t('home.program.point4')}</Text>
               </View>
               <View style={styles.programPoint}>
                 <IconSymbol name="checkmark.circle.fill" size={20} color={colors.primary} />
-                <Text style={styles.programPointText}>{t('home.program.point5')}</Text>
+                <Text style={[styles.programPointText, { color: colors.text }]}>{t('home.program.point5')}</Text>
               </View>
             </View>
           </View>
 
           {/* Donation Section */}
-          <View style={[commonStyles.section, styles.donationSection]}>
+          <View style={[commonStyles.section, styles.donationSection, { backgroundColor: colors.card }]}>
             <Text style={[commonStyles.subtitle, { color: colors.primary }]}>{t('home.donation.title')}</Text>
-            <Text style={[commonStyles.textSecondary, { marginBottom: 16 }]}>
+            <Text style={[commonStyles.textSecondary, { marginBottom: 16, color: colors.textSecondary }]}>
               {t('home.donation.subtitle')}
             </Text>
             <Pressable 
-              style={[buttonStyles.primary, { flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }]}
+              style={[buttonStyles.primary, { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: colors.primary }]}
               onPress={handleDonation}
             >
               <IconSymbol name="heart.fill" size={20} color={colors.white} />
-              <Text style={[buttonStyles.text, { marginLeft: 8 }]}>{t('home.donation.button')}</Text>
+              <Text style={[buttonStyles.text, { marginLeft: 8, color: colors.white }]}>{t('home.donation.button')}</Text>
             </Pressable>
           </View>
 
@@ -121,132 +123,132 @@ export default function HomeScreen() {
             <Text style={[commonStyles.subtitle, { color: colors.primary, marginBottom: 16 }]}>{t('home.actions.title')}</Text>
             <View style={styles.actionGrid}>
               <Link href="/membership" asChild>
-                <Pressable style={styles.actionCard}>
+                <Pressable style={[styles.actionCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
                   <View style={[styles.actionIcon, { backgroundColor: colors.primary }]}>
                     <IconSymbol name="person.badge.plus" size={28} color={colors.white} />
                   </View>
-                  <Text style={styles.actionTitle}>{t('home.action.join')}</Text>
-                  <Text style={styles.actionDescription}>{t('home.action.join.desc')}</Text>
+                  <Text style={[styles.actionTitle, { color: colors.text }]}>{t('home.action.join')}</Text>
+                  <Text style={[styles.actionDescription, { color: colors.textSecondary }]}>{t('home.action.join.desc')}</Text>
                 </Pressable>
               </Link>
 
               <Link href="/events" asChild>
-                <Pressable style={styles.actionCard}>
+                <Pressable style={[styles.actionCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
                   <View style={[styles.actionIcon, { backgroundColor: colors.accent }]}>
                     <IconSymbol name="calendar" size={28} color={colors.white} />
                   </View>
-                  <Text style={styles.actionTitle}>{t('home.action.events')}</Text>
-                  <Text style={styles.actionDescription}>{t('home.action.events.desc')}</Text>
+                  <Text style={[styles.actionTitle, { color: colors.text }]}>{t('home.action.events')}</Text>
+                  <Text style={[styles.actionDescription, { color: colors.textSecondary }]}>{t('home.action.events.desc')}</Text>
                 </Pressable>
               </Link>
 
               <Link href="/news" asChild>
-                <Pressable style={styles.actionCard}>
+                <Pressable style={[styles.actionCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
                   <View style={[styles.actionIcon, { backgroundColor: colors.highlight }]}>
                     <IconSymbol name="newspaper" size={28} color={colors.white} />
                   </View>
-                  <Text style={styles.actionTitle}>{t('home.action.news')}</Text>
-                  <Text style={styles.actionDescription}>{t('home.action.news.desc')}</Text>
+                  <Text style={[styles.actionTitle, { color: colors.text }]}>{t('home.action.news')}</Text>
+                  <Text style={[styles.actionDescription, { color: colors.textSecondary }]}>{t('home.action.news.desc')}</Text>
                 </Pressable>
               </Link>
 
               <Link href="/contact" asChild>
-                <Pressable style={styles.actionCard}>
+                <Pressable style={[styles.actionCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
                   <View style={[styles.actionIcon, { backgroundColor: colors.secondary }]}>
                     <IconSymbol name="envelope.fill" size={28} color={colors.black} />
                   </View>
-                  <Text style={styles.actionTitle}>{t('home.action.contact')}</Text>
-                  <Text style={styles.actionDescription}>{t('home.action.contact.desc')}</Text>
+                  <Text style={[styles.actionTitle, { color: colors.text }]}>{t('home.action.contact')}</Text>
+                  <Text style={[styles.actionDescription, { color: colors.textSecondary }]}>{t('home.action.contact.desc')}</Text>
                 </Pressable>
               </Link>
 
               <Link href="/chat" asChild>
-                <Pressable style={styles.actionCard}>
+                <Pressable style={[styles.actionCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
                   <View style={[styles.actionIcon, { backgroundColor: colors.accent }]}>
                     <IconSymbol name="bubble.left.and.bubble.right.fill" size={28} color={colors.white} />
                   </View>
-                  <Text style={styles.actionTitle}>{t('home.action.chat')}</Text>
-                  <Text style={styles.actionDescription}>{t('home.action.chat.desc')}</Text>
+                  <Text style={[styles.actionTitle, { color: colors.text }]}>{t('home.action.chat')}</Text>
+                  <Text style={[styles.actionDescription, { color: colors.textSecondary }]}>{t('home.action.chat.desc')}</Text>
                 </Pressable>
               </Link>
 
               <Link href="/media-gallery" asChild>
-                <Pressable style={styles.actionCard}>
+                <Pressable style={[styles.actionCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
                   <View style={[styles.actionIcon, { backgroundColor: colors.highlight }]}>
                     <IconSymbol name="photo.fill" size={28} color={colors.white} />
                   </View>
-                  <Text style={styles.actionTitle}>{t('home.action.gallery')}</Text>
-                  <Text style={styles.actionDescription}>{t('home.action.gallery.desc')}</Text>
+                  <Text style={[styles.actionTitle, { color: colors.text }]}>{t('home.action.gallery')}</Text>
+                  <Text style={[styles.actionDescription, { color: colors.textSecondary }]}>{t('home.action.gallery.desc')}</Text>
                 </Pressable>
               </Link>
 
               <Link href="/regions" asChild>
-                <Pressable style={styles.actionCard}>
+                <Pressable style={[styles.actionCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
                   <View style={[styles.actionIcon, { backgroundColor: colors.primary }]}>
                     <IconSymbol name="map.fill" size={28} color={colors.white} />
                   </View>
-                  <Text style={styles.actionTitle}>{t('home.action.regions')}</Text>
-                  <Text style={styles.actionDescription}>{t('home.action.regions.desc')}</Text>
+                  <Text style={[styles.actionTitle, { color: colors.text }]}>{t('home.action.regions')}</Text>
+                  <Text style={[styles.actionDescription, { color: colors.textSecondary }]}>{t('home.action.regions.desc')}</Text>
                 </Pressable>
               </Link>
 
               <Link href="/public-dashboard" asChild>
-                <Pressable style={styles.actionCard}>
+                <Pressable style={[styles.actionCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
                   <View style={[styles.actionIcon, { backgroundColor: colors.accent }]}>
                     <IconSymbol name="chart.bar.fill" size={28} color={colors.white} />
                   </View>
-                  <Text style={styles.actionTitle}>{t('home.action.dashboard')}</Text>
-                  <Text style={styles.actionDescription}>{t('home.action.dashboard.desc')}</Text>
+                  <Text style={[styles.actionTitle, { color: colors.text }]}>{t('home.action.dashboard')}</Text>
+                  <Text style={[styles.actionDescription, { color: colors.textSecondary }]}>{t('home.action.dashboard.desc')}</Text>
                 </Pressable>
               </Link>
 
               <Link href="/video-conference" asChild>
-                <Pressable style={styles.actionCard}>
+                <Pressable style={[styles.actionCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
                   <View style={[styles.actionIcon, { backgroundColor: colors.highlight }]}>
                     <IconSymbol name="video.fill" size={28} color={colors.white} />
                   </View>
-                  <Text style={styles.actionTitle}>{t('home.action.video')}</Text>
-                  <Text style={styles.actionDescription}>{t('home.action.video.desc')}</Text>
+                  <Text style={[styles.actionTitle, { color: colors.text }]}>{t('home.action.video')}</Text>
+                  <Text style={[styles.actionDescription, { color: colors.textSecondary }]}>{t('home.action.video.desc')}</Text>
                 </Pressable>
               </Link>
 
               <Link href="/share" asChild>
-                <Pressable style={styles.actionCard}>
+                <Pressable style={[styles.actionCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
                   <View style={[styles.actionIcon, { backgroundColor: '#1877F2' }]}>
                     <IconSymbol name="square.and.arrow.up.fill" size={28} color={colors.white} />
                   </View>
-                  <Text style={styles.actionTitle}>{t('home.action.share')}</Text>
-                  <Text style={styles.actionDescription}>{t('home.action.share.desc')}</Text>
+                  <Text style={[styles.actionTitle, { color: colors.text }]}>{t('home.action.share')}</Text>
+                  <Text style={[styles.actionDescription, { color: colors.textSecondary }]}>{t('home.action.share.desc')}</Text>
                 </Pressable>
               </Link>
 
               <Link href="/install-pwa" asChild>
-                <Pressable style={styles.actionCard}>
+                <Pressable style={[styles.actionCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
                   <View style={[styles.actionIcon, { backgroundColor: colors.success }]}>
                     <IconSymbol name="arrow.down.circle.fill" size={28} color={colors.white} />
                   </View>
-                  <Text style={styles.actionTitle}>{t('home.action.install')}</Text>
-                  <Text style={styles.actionDescription}>{t('home.action.install.desc')}</Text>
+                  <Text style={[styles.actionTitle, { color: colors.text }]}>{t('home.action.install')}</Text>
+                  <Text style={[styles.actionDescription, { color: colors.textSecondary }]}>{t('home.action.install.desc')}</Text>
                 </Pressable>
               </Link>
 
               <Link href="/test-password" asChild>
-                <Pressable style={styles.actionCard}>
+                <Pressable style={[styles.actionCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
                   <View style={[styles.actionIcon, { backgroundColor: '#10b981' }]}>
                     <IconSymbol name="checkmark.shield.fill" size={28} color={colors.white} />
                   </View>
-                  <Text style={styles.actionTitle}>{t('home.action.test')}</Text>
-                  <Text style={styles.actionDescription}>{t('home.action.test.desc')}</Text>
+                  <Text style={[styles.actionTitle, { color: colors.text }]}>{t('home.action.test')}</Text>
+                  <Text style={[styles.actionDescription, { color: colors.textSecondary }]}>{t('home.action.test.desc')}</Text>
                 </Pressable>
               </Link>
 
               <Link href="/admin-login" asChild>
-                <Pressable style={styles.actionCard}>
+                <Pressable style={[styles.actionCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
                   <View style={[styles.actionIcon, { backgroundColor: colors.error }]}>
                     <IconSymbol name="lock.shield.fill" size={28} color={colors.white} />
                   </View>
-                  <Text style={styles.actionTitle}>{t('home.action.admin')}</Text>
-                  <Text style={styles.actionDescription}>{t('home.action.admin.desc')}</Text>
+                  <Text style={[styles.actionTitle, { color: colors.text }]}>{t('home.action.admin')}</Text>
+                  <Text style={[styles.actionDescription, { color: colors.textSecondary }]}>{t('home.action.admin.desc')}</Text>
                 </Pressable>
               </Link>
             </View>
@@ -255,20 +257,20 @@ export default function HomeScreen() {
           {/* Party Info */}
           <View style={[commonStyles.section, styles.infoSection]}>
             <Text style={[commonStyles.subtitle, { color: colors.primary }]}>{t('home.info.title')}</Text>
-            <View style={commonStyles.cardWhite}>
+            <View style={[commonStyles.cardWhite, { backgroundColor: colors.card, borderColor: colors.border }]}>
               <View style={styles.infoRow}>
                 <IconSymbol name="building.2" size={20} color={colors.primary} />
                 <View style={styles.infoContent}>
-                  <Text style={styles.infoLabel}>{t('home.info.headquarters')}</Text>
-                  <Text style={styles.infoText}>{t('home.info.headquarters.address')}</Text>
+                  <Text style={[styles.infoLabel, { color: colors.text }]}>{t('home.info.headquarters')}</Text>
+                  <Text style={[styles.infoText, { color: colors.textSecondary }]}>{t('home.info.headquarters.address')}</Text>
                 </View>
               </View>
-              <View style={styles.divider} />
+              <View style={[styles.divider, { backgroundColor: colors.border }]} />
               <View style={styles.infoRow}>
                 <IconSymbol name="phone.fill" size={20} color={colors.primary} />
                 <View style={styles.infoContent}>
-                  <Text style={styles.infoLabel}>{t('home.info.contact')}</Text>
-                  <Text style={styles.infoText}>+223 76 30 48 69</Text>
+                  <Text style={[styles.infoLabel, { color: colors.text }]}>{t('home.info.contact')}</Text>
+                  <Text style={[styles.infoText, { color: colors.textSecondary }]}>+223 76 30 48 69</Text>
                 </View>
               </View>
             </View>
@@ -302,33 +304,23 @@ const styles = StyleSheet.create({
   languageButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.white,
     paddingVertical: 10,
     paddingHorizontal: 16,
     borderRadius: 20,
     alignSelf: 'flex-end',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-      },
-      android: {
-        elevation: 2,
-      },
-    }),
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
     borderWidth: 1,
-    borderColor: colors.border,
   },
   languageButtonText: {
     fontSize: 14,
     fontWeight: '600',
-    color: colors.primary,
     marginLeft: 6,
   },
   heroSection: {
-    backgroundColor: colors.primary,
     paddingVertical: 40,
     paddingHorizontal: 20,
     alignItems: 'center',
@@ -338,24 +330,20 @@ const styles = StyleSheet.create({
     height: 120,
     marginBottom: 20,
     borderRadius: 60,
-    backgroundColor: colors.white,
   },
   heroTitle: {
     fontSize: 36,
     fontWeight: '900',
-    color: colors.white,
     marginBottom: 8,
     textAlign: 'center',
   },
   heroSubtitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: colors.white,
     textAlign: 'center',
     marginBottom: 16,
   },
   mottoContainer: {
-    backgroundColor: colors.secondary,
     paddingVertical: 8,
     paddingHorizontal: 20,
     borderRadius: 20,
@@ -363,7 +351,6 @@ const styles = StyleSheet.create({
   motto: {
     fontSize: 16,
     fontWeight: '700',
-    color: colors.black,
     textAlign: 'center',
   },
   programSection: {
@@ -376,13 +363,11 @@ const styles = StyleSheet.create({
   },
   programPointText: {
     fontSize: 15,
-    color: colors.text,
     marginLeft: 10,
     flex: 1,
     lineHeight: 22,
   },
   donationSection: {
-    backgroundColor: colors.card,
     paddingVertical: 24,
     marginTop: 8,
   },
@@ -396,24 +381,16 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   actionCard: {
-    backgroundColor: colors.white,
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
     width: '48%',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-      },
-      android: {
-        elevation: 2,
-      },
-    }),
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
     borderWidth: 1,
-    borderColor: colors.border,
   },
   actionIcon: {
     width: 56,
@@ -426,13 +403,11 @@ const styles = StyleSheet.create({
   actionTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: colors.text,
     marginBottom: 4,
     textAlign: 'center',
   },
   actionDescription: {
     fontSize: 12,
-    color: colors.textSecondary,
     textAlign: 'center',
   },
   infoSection: {
@@ -449,17 +424,14 @@ const styles = StyleSheet.create({
   infoLabel: {
     fontSize: 14,
     fontWeight: '700',
-    color: colors.text,
     marginBottom: 4,
   },
   infoText: {
     fontSize: 14,
-    color: colors.textSecondary,
     lineHeight: 20,
   },
   divider: {
     height: 1,
-    backgroundColor: colors.border,
     marginVertical: 12,
   },
 });

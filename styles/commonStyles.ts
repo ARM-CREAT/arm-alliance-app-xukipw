@@ -1,25 +1,52 @@
 
-import { StyleSheet, ViewStyle, TextStyle } from 'react-native';
+import { StyleSheet, ViewStyle, TextStyle, useColorScheme } from 'react-native';
 
-export const colors = {
-  background: '#FFFFFF',
-  text: '#000000',
+// Light mode colors
+export const lightColors = {
+  background: '#F5F5F5',
+  text: '#1A1A1A',
   textSecondary: '#666666',
   primary: '#38761d',
   secondary: '#f4c430',
   accent: '#3498db',
-  card: '#f0f0f0',
+  card: '#FFFFFF',
   highlight: '#e67e22',
-  border: '#e0e0e0',
+  border: '#E0E0E0',
   success: '#22c55e',
   error: '#ef4444',
+  white: '#FFFFFF',
+  black: '#1A1A1A',
+};
+
+// Dark mode colors
+export const darkColors = {
+  background: '#121212',
+  text: '#FFFFFF',
+  textSecondary: '#B0B0B0',
+  primary: '#4CAF50',
+  secondary: '#FFD54F',
+  accent: '#64B5F6',
+  card: '#1E1E1E',
+  highlight: '#FF9800',
+  border: '#333333',
+  success: '#66BB6A',
+  error: '#EF5350',
   white: '#FFFFFF',
   black: '#000000',
 };
 
+// Default to light colors for backwards compatibility
+export const colors = lightColors;
+
+// Hook to get colors based on color scheme
+export const useThemeColors = () => {
+  const colorScheme = useColorScheme();
+  return colorScheme === 'dark' ? darkColors : lightColors;
+};
+
 export const buttonStyles = StyleSheet.create({
   primary: {
-    backgroundColor: colors.primary,
+    backgroundColor: lightColors.primary,
     paddingVertical: 14,
     paddingHorizontal: 24,
     borderRadius: 8,
@@ -27,7 +54,7 @@ export const buttonStyles = StyleSheet.create({
     justifyContent: 'center',
   },
   secondary: {
-    backgroundColor: colors.secondary,
+    backgroundColor: lightColors.secondary,
     paddingVertical: 14,
     paddingHorizontal: 24,
     borderRadius: 8,
@@ -35,7 +62,7 @@ export const buttonStyles = StyleSheet.create({
     justifyContent: 'center',
   },
   accent: {
-    backgroundColor: colors.accent,
+    backgroundColor: lightColors.accent,
     paddingVertical: 14,
     paddingHorizontal: 24,
     borderRadius: 8,
@@ -45,7 +72,7 @@ export const buttonStyles = StyleSheet.create({
   outline: {
     backgroundColor: 'transparent',
     borderWidth: 2,
-    borderColor: colors.primary,
+    borderColor: lightColors.primary,
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 8,
@@ -53,12 +80,12 @@ export const buttonStyles = StyleSheet.create({
     justifyContent: 'center',
   },
   text: {
-    color: colors.white,
+    color: lightColors.white,
     fontSize: 16,
     fontWeight: '600',
   },
   textOutline: {
-    color: colors.primary,
+    color: lightColors.primary,
     fontSize: 16,
     fontWeight: '600',
   },
@@ -66,13 +93,13 @@ export const buttonStyles = StyleSheet.create({
 
 export const commonStyles = StyleSheet.create({
   wrapper: {
-    backgroundColor: colors.background,
+    backgroundColor: lightColors.background,
     width: '100%',
     height: '100%',
   },
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: lightColors.background,
     width: '100%',
     height: '100%',
   },
@@ -87,26 +114,26 @@ export const commonStyles = StyleSheet.create({
     fontSize: 28,
     fontWeight: '800',
     textAlign: 'center',
-    color: colors.text,
+    color: lightColors.text,
     marginBottom: 12,
   },
   subtitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: colors.text,
+    color: lightColors.text,
     marginBottom: 10,
   },
   text: {
     fontSize: 16,
     fontWeight: '400',
-    color: colors.text,
+    color: lightColors.text,
     marginBottom: 8,
     lineHeight: 24,
   },
   textSecondary: {
     fontSize: 14,
     fontWeight: '400',
-    color: colors.textSecondary,
+    color: lightColors.textSecondary,
     lineHeight: 20,
   },
   section: {
@@ -115,45 +142,51 @@ export const commonStyles = StyleSheet.create({
     marginBottom: 24,
   },
   card: {
-    backgroundColor: colors.card,
+    backgroundColor: lightColors.card,
     borderRadius: 12,
     padding: 16,
     marginVertical: 8,
     width: '100%',
-    boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
     elevation: 2,
   },
   cardWhite: {
-    backgroundColor: colors.white,
+    backgroundColor: lightColors.white,
     borderRadius: 12,
     padding: 16,
     marginVertical: 8,
     width: '100%',
-    boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
     elevation: 2,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: lightColors.border,
   },
   input: {
-    backgroundColor: colors.white,
+    backgroundColor: lightColors.white,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: lightColors.border,
     borderRadius: 8,
     paddingVertical: 12,
     paddingHorizontal: 16,
     fontSize: 16,
-    color: colors.text,
+    color: lightColors.text,
     marginBottom: 16,
   },
   inputMultiline: {
-    backgroundColor: colors.white,
+    backgroundColor: lightColors.white,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: lightColors.border,
     borderRadius: 8,
     paddingVertical: 12,
     paddingHorizontal: 16,
     fontSize: 16,
-    color: colors.text,
+    color: lightColors.text,
     marginBottom: 16,
     minHeight: 100,
     textAlignVertical: 'top',
@@ -161,23 +194,23 @@ export const commonStyles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '600',
-    color: colors.text,
+    color: lightColors.text,
     marginBottom: 6,
   },
   divider: {
     height: 1,
-    backgroundColor: colors.border,
+    backgroundColor: lightColors.border,
     marginVertical: 16,
   },
   badge: {
-    backgroundColor: colors.primary,
+    backgroundColor: lightColors.primary,
     paddingVertical: 4,
     paddingHorizontal: 12,
     borderRadius: 12,
     alignSelf: 'flex-start',
   },
   badgeText: {
-    color: colors.white,
+    color: lightColors.white,
     fontSize: 12,
     fontWeight: '600',
   },
