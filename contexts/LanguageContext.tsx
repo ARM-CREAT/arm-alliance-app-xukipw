@@ -2,7 +2,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export type Language = 'fr' | 'en' | 'es' | 'bm';
+export type Language = 'fr' | 'es' | 'bm';
 
 interface LanguageContextType {
   language: Language;
@@ -178,173 +178,6 @@ const translations: Record<Language, Record<string, string>> = {
     // Language Selector
     'language.title': 'Langue',
     'language.french': 'Français',
-    'language.english': 'English',
-    'language.spanish': 'Español',
-    'language.bambara': 'Bamanankan',
-  },
-  en: {
-    // Navigation
-    'nav.home': 'Home',
-    'nav.profile': 'Members',
-    'nav.events': 'Events',
-    'nav.news': 'News',
-    'nav.contact': 'Contact',
-    'nav.chat': 'Chat',
-    'nav.donations': 'Donations',
-    'nav.media': 'Gallery',
-    'nav.regions': 'Regions',
-    'nav.dashboard': 'Dashboard',
-    'nav.admin': 'Administration',
-    
-    // Home Screen
-    'home.title': 'A.R.M',
-    'home.subtitle': 'Alliance for Malian Unity',
-    'home.motto': 'Fraternity • Liberty • Equality',
-    'home.program.title': 'Our Political Program',
-    'home.program.intro': 'The Alliance for Malian Unity (A.R.M) is committed to building a united, prosperous and democratic Mali. Our vision is based on the fundamental values of fraternity, liberty and equality for all Malians.',
-    'home.program.point1': 'Strengthening democracy and the rule of law',
-    'home.program.point2': 'Economic development and job creation',
-    'home.program.point3': 'Quality education for all',
-    'home.program.point4': 'Accessible and modernized healthcare',
-    'home.program.point5': 'National unity and social cohesion',
-    'home.donation.title': 'Support Our Movement',
-    'home.donation.subtitle': 'Your contribution helps us build a better Mali',
-    'home.donation.button': 'Make a donation',
-    'home.actions.title': 'Quick Actions',
-    'home.action.join': 'Join',
-    'home.action.join.desc': 'Join the party',
-    'home.action.events': 'Events',
-    'home.action.events.desc': 'Our activities',
-    'home.action.news': 'News',
-    'home.action.news.desc': 'Latest news',
-    'home.action.contact': 'Contact',
-    'home.action.contact.desc': 'Contact us',
-    'home.action.chat': 'Chat',
-    'home.action.chat.desc': 'Public discussion',
-    'home.action.gallery': 'Gallery',
-    'home.action.gallery.desc': 'Photos & Videos',
-    'home.action.regions': 'Regions',
-    'home.action.regions.desc': 'Regions of Mali',
-    'home.action.dashboard': 'Dashboard',
-    'home.action.dashboard.desc': 'Overview',
-    'home.action.video': 'Video Conference',
-    'home.action.video.desc': 'Online meetings',
-    'home.action.share': 'Share',
-    'home.action.share.desc': 'Share A.R.M',
-    'home.action.install': 'Install',
-    'home.action.install.desc': 'Install the app',
-    'home.action.test': 'Admin Test',
-    'home.action.test.desc': 'Test password',
-    'home.action.admin': 'Admin',
-    'home.action.admin.desc': 'Admin area',
-    'home.info.title': 'Information',
-    'home.info.headquarters': 'Headquarters',
-    'home.info.headquarters.address': 'Street 530, Door 245, Sebenikoro, Bamako, Mali',
-    'home.info.contact': 'Contact',
-    
-    // Profile Screen
-    'profile.title': 'Party Members',
-    'profile.header.title': 'Party Leadership',
-    'profile.header.subtitle': 'Meet the members of our leadership team',
-    'profile.role.president': 'President',
-    'profile.role.vicepresident1': 'First Vice President',
-    'profile.role.vicepresident2': 'Second Vice President',
-    'profile.role.secretary': 'General Secretary',
-    'profile.role.admin': 'Administrative Secretary',
-    'profile.role.treasurer': 'Treasurer',
-    'profile.role.member': 'Member',
-    'profile.actions.title': 'Quick actions',
-    'profile.action.call': 'Call',
-    'profile.action.message': 'Message',
-    'profile.action.email': 'Email',
-    'profile.values.title': 'Our Values',
-    'profile.value.fraternity': 'Fraternity',
-    'profile.value.fraternity.desc': 'Unity and solidarity among all Malians',
-    'profile.value.liberty': 'Liberty',
-    'profile.value.liberty.desc': 'Respect for fundamental rights and freedoms',
-    'profile.value.equality': 'Equality',
-    'profile.value.equality.desc': 'Justice and equity for all citizens',
-    'profile.headquarters.title': 'Party Headquarters',
-    'profile.headquarters.address': 'Street 530, Door 245\nSebenikoro, Bamako\nMali',
-    'profile.error.noPhone': 'Phone number is not available.',
-    'profile.error.cannotCall': 'Cannot open phone application.',
-    'profile.error.cannotMessage': 'Cannot open messaging application.',
-    'profile.error.cannotEmail': 'Cannot open email application.',
-    
-    // Contact Screen
-    'contact.title': 'Contact Us',
-    'contact.subtitle': 'We are here to listen',
-    'contact.form.title': 'Send us a message',
-    'contact.form.name': 'Name',
-    'contact.form.email': 'Email',
-    'contact.form.phone': 'Phone',
-    'contact.form.subject': 'Subject',
-    'contact.form.message': 'Message',
-    'contact.form.send': 'Send message',
-    'contact.form.cancel': 'Cancel',
-    'contact.form.required': 'Please fill in all required fields',
-    'contact.form.success': 'Thank you for your message! We will respond as soon as possible.',
-    'contact.quickActions': 'Quick actions',
-    
-    // Donations
-    'donations.title': 'Make a Donation',
-    'donations.subtitle': 'Support our movement for a better Mali',
-    'donations.amount.title': 'Donation amount',
-    'donations.amount.custom': 'Custom amount',
-    'donations.amount.custom.placeholder': 'Enter amount',
-    'donations.payment.title': 'Payment method',
-    'donations.payment.card': 'Bank card',
-    'donations.payment.bank': 'Bank transfer',
-    'donations.payment.mobile': 'Orange Money',
-    'donations.button': 'Donate',
-    'donations.success': 'Thank you for your donation!',
-    'donations.success.message': 'Your contribution helps us build a better Mali.',
-    
-    // Events
-    'events.title': 'Events',
-    'events.upcoming': 'Upcoming events',
-    'events.past': 'Past events',
-    'events.all': 'All',
-    'events.search': 'Search for an event...',
-    'events.register': 'Register',
-    'events.registered': 'Registration confirmed',
-    'events.type.meeting': 'Meeting',
-    'events.type.rally': 'Rally',
-    'events.type.conference': 'Conference',
-    'events.type.training': 'Training',
-    'events.type.other': 'Other',
-    
-    // News
-    'news.title': 'News',
-    'news.latest': 'Latest news',
-    'news.all': 'All',
-    'news.search': 'Search for news...',
-    'news.category.politics': 'Politics',
-    'news.category.economy': 'Economy',
-    'news.category.social': 'Social',
-    'news.category.culture': 'Culture',
-    'news.category.other': 'Other',
-    
-    // Common
-    'common.loading': 'Loading...',
-    'common.error': 'Error',
-    'common.success': 'Success',
-    'common.cancel': 'Cancel',
-    'common.confirm': 'Confirm',
-    'common.save': 'Save',
-    'common.delete': 'Delete',
-    'common.edit': 'Edit',
-    'common.back': 'Back',
-    'common.close': 'Close',
-    'common.search': 'Search',
-    'common.filter': 'Filter',
-    'common.refresh': 'Refresh',
-    'common.unavailable': 'Not available',
-    
-    // Language Selector
-    'language.title': 'Language',
-    'language.french': 'Français',
-    'language.english': 'English',
     'language.spanish': 'Español',
     'language.bambara': 'Bamanankan',
   },
@@ -510,7 +343,6 @@ const translations: Record<Language, Record<string, string>> = {
     // Language Selector
     'language.title': 'Idioma',
     'language.french': 'Français',
-    'language.english': 'English',
     'language.spanish': 'Español',
     'language.bambara': 'Bamanankan',
   },
@@ -676,7 +508,6 @@ const translations: Record<Language, Record<string, string>> = {
     // Language Selector
     'language.title': 'Kan',
     'language.french': 'Faransi kan',
-    'language.english': 'Angilɛ kan',
     'language.spanish': 'Ɛspanyi kan',
     'language.bambara': 'Bamanankan',
   },
@@ -692,7 +523,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const loadLanguage = async () => {
     try {
       const stored = await AsyncStorage.getItem(LANGUAGE_KEY);
-      if (stored && ['fr', 'en', 'es', 'bm'].includes(stored)) {
+      if (stored && ['fr', 'es', 'bm'].includes(stored)) {
         setLanguageState(stored as Language);
       }
     } catch (error) {
