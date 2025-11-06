@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Stack } from "expo-router";
 import { ScrollView, StyleSheet, View, Text, Image, Pressable, Platform, useColorScheme } from "react-native";
 import { IconSymbol } from "@/components/IconSymbol";
@@ -10,17 +10,26 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { LanguageSelector } from "@/components/LanguageSelector";
 
 export default function HomeScreen() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [showLanguageSelector, setShowLanguageSelector] = useState(false);
   const colorScheme = useColorScheme();
   const colors = colorScheme === 'dark' ? darkColors : lightColors;
 
+  // Debug logging
+  useEffect(() => {
+    console.log('HomeScreen mounted');
+    console.log('Color scheme:', colorScheme);
+    console.log('Language:', language);
+    console.log('Colors:', colors);
+  }, [colorScheme, language]);
+
   const handleDonation = () => {
+    console.log('Donation button pressed');
     router.push('/donations');
   };
 
   return (
-    <>
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
       {Platform.OS === 'ios' && (
         <Stack.Screen
           options={{
@@ -37,9 +46,9 @@ export default function HomeScreen() {
           }}
         />
       )}
-      <SafeAreaView style={[commonStyles.container, { backgroundColor: colors.background }]} edges={['top']}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={['top']}>
         <ScrollView 
-          style={[styles.scrollView, { backgroundColor: colors.background }]}
+          style={{ flex: 1, backgroundColor: colors.background }}
           contentContainerStyle={[
             styles.scrollContent,
             Platform.OS !== 'ios' && styles.scrollContentWithTabBar
@@ -282,14 +291,11 @@ export default function HomeScreen() {
         visible={showLanguageSelector}
         onClose={() => setShowLanguageSelector(false)}
       />
-    </>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  scrollView: {
-    flex: 1,
-  },
   scrollContent: {
     paddingBottom: 20,
   },
