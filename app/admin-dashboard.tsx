@@ -121,6 +121,26 @@ export default function AdminDashboardScreen() {
     );
   };
 
+  if (!isAuthenticated) {
+    return (
+      <SafeAreaView style={[commonStyles.container, { backgroundColor: colors.background }]} edges={['bottom']}>
+        <View style={styles.unauthorizedContainer}>
+          <IconSymbol name="lock.shield.fill" size={64} color={colors.error} />
+          <Text style={styles.unauthorizedTitle}>Accès Non Autorisé</Text>
+          <Text style={styles.unauthorizedText}>
+            Vous devez vous connecter en tant qu&apos;administrateur pour accéder à cette page.
+          </Text>
+          <Pressable
+            style={buttonStyles.primary}
+            onPress={() => router.replace('/admin-login')}
+          >
+            <Text style={buttonStyles.text}>Se connecter</Text>
+          </Pressable>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <>
       <Stack.Screen
@@ -235,6 +255,26 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingBottom: 40,
+  },
+  unauthorizedContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  unauthorizedTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: colors.text,
+    marginTop: 20,
+    marginBottom: 12,
+  },
+  unauthorizedText: {
+    fontSize: 16,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    marginBottom: 24,
+    lineHeight: 24,
   },
   welcomeCard: {
     backgroundColor: colors.white,

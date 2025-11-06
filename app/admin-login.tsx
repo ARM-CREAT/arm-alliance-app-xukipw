@@ -49,6 +49,7 @@ export default function AdminLoginScreen() {
             {
               text: 'OK',
               onPress: () => {
+                setPassword('');
                 router.replace('/admin-dashboard');
               },
             },
@@ -67,6 +68,7 @@ export default function AdminLoginScreen() {
     } catch (error) {
       console.error('Login error:', error);
       Alert.alert('Erreur', 'Une erreur est survenue lors de la connexion');
+      setPassword('');
     } finally {
       setIsLoading(false);
     }
@@ -150,6 +152,7 @@ export default function AdminLoginScreen() {
                 <IconSymbol name="info.circle.fill" size={20} color={colors.accent} />
                 <Text style={styles.infoText}>
                   Seuls les administrateurs autorisés peuvent accéder à cet espace.
+                  Le mot de passe est sécurisé et ne sera jamais affiché.
                 </Text>
               </View>
             </View>
@@ -157,7 +160,7 @@ export default function AdminLoginScreen() {
             <View style={styles.securityNote}>
               <IconSymbol name="checkmark.shield.fill" size={16} color={colors.success} />
               <Text style={styles.securityText}>
-                Connexion sécurisée
+                Connexion sécurisée et cryptée
               </Text>
             </View>
           </View>

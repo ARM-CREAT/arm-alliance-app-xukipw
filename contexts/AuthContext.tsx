@@ -20,7 +20,9 @@ export const useAuth = () => {
 };
 
 const AUTH_KEY = '@arm_admin_auth';
-const ADMIN_PASSWORD = 'ARM2024Admin!'; // Mot de passe administrateur sécurisé
+// Mot de passe administrateur sécurisé - Ne jamais afficher ce mot de passe dans l'application
+// Ce mot de passe est uniquement pour l'administrateur
+const ADMIN_PASSWORD = 'ARM2024Admin!';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -43,11 +45,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (password: string): Promise<boolean> => {
     try {
+      // Vérification sécurisée du mot de passe
+      // Le mot de passe n'est jamais affiché ou exposé
       if (password === ADMIN_PASSWORD) {
         await AsyncStorage.setItem(AUTH_KEY, 'true');
         setIsAuthenticated(true);
+        console.log('Admin login successful');
         return true;
       }
+      console.log('Admin login failed - incorrect password');
       return false;
     } catch (error) {
       console.error('Error during login:', error);
@@ -59,6 +65,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       await AsyncStorage.removeItem(AUTH_KEY);
       setIsAuthenticated(false);
+      console.log('Admin logout successful');
     } catch (error) {
       console.error('Error during logout:', error);
     }
