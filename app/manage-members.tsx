@@ -367,7 +367,7 @@ export default function ManageMembersScreen() {
             {members.map((member) => (
               <View key={member.id} style={styles.memberCard}>
                 <Image 
-                  source={require('@/assets/images/5aab13fd-fe57-45c4-bde2-69d0cd5cb2b6.jpeg')}
+                  source={require('@/assets/images/f6f1baa3-a779-4a50-9d6f-cd42e41f1832.jpeg')}
                   style={styles.memberImage}
                   resizeMode="contain"
                 />
@@ -517,7 +517,7 @@ const styles = StyleSheet.create({
     height: 150,
     borderRadius: 8,
     marginBottom: 12,
-    backgroundColor: colors.card,
+    backgroundColor: '#FFFFFF',
   },
   memberInfo: {
     gap: 12,

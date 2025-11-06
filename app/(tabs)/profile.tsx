@@ -150,7 +150,11 @@ export default function ProfileScreen() {
 
           {/* Header */}
           <View style={[styles.header, { backgroundColor: colors.primary }]}>
-            <IconSymbol name="person.3.fill" size={48} color={colors.white} />
+            <Image
+              source={require('@/assets/images/f6f1baa3-a779-4a50-9d6f-cd42e41f1832.jpeg')}
+              style={styles.headerLogo}
+              resizeMode="contain"
+            />
             <Text style={[styles.headerTitle, { color: colors.white }]}>{t('profile.title')}</Text>
             <Text style={[styles.headerSubtitle, { color: colors.white }]}>{t('profile.subtitle')}</Text>
           </View>
@@ -168,9 +172,9 @@ export default function ProfileScreen() {
                 >
                   <View style={styles.memberHeader}>
                     <Image
-                      source={{ uri: member.image }}
+                      source={require('@/assets/images/f6f1baa3-a779-4a50-9d6f-cd42e41f1832.jpeg')}
                       style={styles.memberImage}
-                      resizeMode="cover"
+                      resizeMode="contain"
                     />
                     <View style={styles.memberInfo}>
                       <Text style={[styles.memberName, { color: colors.text }]}>{member.name}</Text>
@@ -290,10 +294,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     alignItems: 'center',
   },
+  headerLogo: {
+    width: 100,
+    height: 100,
+    marginBottom: 16,
+  },
   headerTitle: {
     fontSize: 32,
     fontWeight: '900',
-    marginTop: 16,
+    marginTop: 8,
     marginBottom: 8,
     textAlign: 'center',
   },
@@ -322,6 +331,7 @@ const styles = StyleSheet.create({
     height: 64,
     borderRadius: 32,
     marginRight: 12,
+    backgroundColor: '#FFFFFF',
   },
   memberInfo: {
     flex: 1,

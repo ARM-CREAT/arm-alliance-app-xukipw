@@ -62,8 +62,8 @@ export default function HomeScreen() {
           {/* Hero Section with Logo */}
           <View style={[styles.heroSection, { backgroundColor: colors.primary }]}>
             <Image
-              source={require('@/assets/images/985330b5-79d1-46f0-a940-6a9b43f3f4ea.jpeg')}
-              style={[styles.logo, { backgroundColor: colors.white }]}
+              source={require('@/assets/images/f6f1baa3-a779-4a50-9d6f-cd42e41f1832.jpeg')}
+              style={styles.logo}
               resizeMode="contain"
             />
             <Text style={[styles.heroTitle, { color: colors.white }]}>{t('home.title')}</Text>
@@ -329,7 +329,6 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     marginBottom: 20,
-    borderRadius: 60,
   },
   heroTitle: {
     fontSize: 36,
