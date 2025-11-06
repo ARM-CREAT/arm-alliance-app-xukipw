@@ -82,16 +82,15 @@ export default function RootLayout() {
     },
   };
   return (
-    <>
+    <GestureHandlerRootView style={{ flex: 1 }}>
       <StatusBar style="auto" animated />
-        <ThemeProvider
-          value={colorScheme === "dark" ? CustomDarkTheme : CustomDefaultTheme}
-        >
-          <AuthProvider>
-            <LanguageProvider>
-              <ContentProvider>
-                <WidgetProvider>
-                  <GestureHandlerRootView>
+      <ThemeProvider
+        value={colorScheme === "dark" ? CustomDarkTheme : CustomDefaultTheme}
+      >
+        <AuthProvider>
+          <LanguageProvider>
+            <ContentProvider>
+              <WidgetProvider>
                 <Stack>
                   {/* Main app with tabs */}
                   <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
@@ -254,13 +253,12 @@ export default function RootLayout() {
                     }}
                   />
                 </Stack>
-                  <SystemBars style={"auto"} />
-                  </GestureHandlerRootView>
-                </WidgetProvider>
-              </ContentProvider>
-            </LanguageProvider>
-          </AuthProvider>
-        </ThemeProvider>
-    </>
+                <SystemBars style={"auto"} />
+              </WidgetProvider>
+            </ContentProvider>
+          </LanguageProvider>
+        </AuthProvider>
+      </ThemeProvider>
+    </GestureHandlerRootView>
   );
 }
