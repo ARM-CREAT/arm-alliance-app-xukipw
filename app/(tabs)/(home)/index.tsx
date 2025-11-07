@@ -241,6 +241,16 @@ export default function HomeScreen() {
                 </Pressable>
               </Link>
 
+              <Link href="/test-checklist" asChild>
+                <Pressable style={[styles.actionCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                  <View style={[styles.actionIcon, { backgroundColor: '#8b5cf6' }]}>
+                    <IconSymbol name="checklist" size={28} color={colors.white} />
+                  </View>
+                  <Text style={[styles.actionTitle, { color: colors.text }]}>Tests</Text>
+                  <Text style={[styles.actionDescription, { color: colors.textSecondary }]}>Liste de contrôle</Text>
+                </Pressable>
+              </Link>
+
               <Link href="/test-password" asChild>
                 <Pressable style={[styles.actionCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
                   <View style={[styles.actionIcon, { backgroundColor: '#10b981' }]}>

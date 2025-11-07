@@ -171,6 +171,14 @@ export default function RootLayout() {
                     }}
                   />
 
+                  {/* Testing & Quality Assurance */}
+                  <Stack.Screen
+                    name="test-checklist"
+                    options={{
+                      headerShown: false,
+                    }}
+                  />
+
                   {/* Public screens */}
                   <Stack.Screen
                     name="membership"
