@@ -1,6 +1,7 @@
+
 {
   "expo": {
-    "name": "arm-alliance-app-xukipw",
+    "name": "A.R.M Alliance Mali",
     "slug": "arm-alliance-app-xukipw",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -14,7 +15,8 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.Natively",
+      "bundleIdentifier": "com.bouadiakitearmmali.app",
+      "buildNumber": "1.0.0",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -25,7 +27,16 @@
         "backgroundColor": "#000000"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.armmali.app"
+      "package": "com.bouadiakitearmmali.app",
+      "versionCode": 1,
+      "permissions": [
+        "INTERNET",
+        "ACCESS_NETWORK_STATE",
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "RECORD_AUDIO"
+      ]
     },
     "web": {
       "favicon": "./assets/images/final_quest_240x240.png",
@@ -34,14 +45,30 @@
     "plugins": [
       "expo-font",
       "expo-router",
-      "expo-web-browser"
+      "expo-web-browser",
+      [
+        "expo-av",
+        {
+          "microphonePermission": "Autoriser l'application à accéder au microphone pour les vidéoconférences."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "L'application a besoin d'accéder à vos photos pour télécharger des images.",
+          "cameraPermission": "L'application a besoin d'accéder à votre caméra pour prendre des photos."
+        }
+      ]
     ],
     "scheme": "natively",
     "experiments": {
       "typedRoutes": true
     },
     "extra": {
-      "router": {}
+      "router": {},
+      "eas": {
+        "projectId": "votre-project-id-ici"
+      }
     }
   }
 }

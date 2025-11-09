@@ -1,5 +1,10 @@
 
+import { useContent } from '@/contexts/ContentContext';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { lightColors, darkColors, buttonStyles } from '@/styles/commonStyles';
 import React, { useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { IconSymbol } from '@/components/IconSymbol';
 import {
   View,
   Text,
@@ -11,105 +16,30 @@ import {
   useColorScheme,
 } from 'react-native';
 import { Stack, router } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useContent } from '@/contexts/ContentContext';
-import { useAuth } from '@/contexts/AuthContext';
-import { IconSymbol } from '@/components/IconSymbol';
-import { lightColors, darkColors, buttonStyles } from '@/styles/commonStyles';
+import { colors } from '@/styles/commonStyles';
 
-export default function AdminDashboardScreen() {
-  const { news, events, media, members, refreshContent } = useContent();
-  const { isAuthenticated, logout, checkAuth } = useAuth();
+const AdminDashboardScreen = () => {
   const colorScheme = useColorScheme();
-  const colors = colorScheme === 'dark' ? darkColors : lightColors;
-
-  const adminMenuItems = [
-    {
-      id: 'news',
-      title: 'Gérer les Actualités',
-      description: 'Ajouter, modifier ou supprimer des actualités',
-      icon: 'newspaper.fill',
-      route: '/manage-news',
-      color: colors.primary,
-    },
-    {
-      id: 'events',
-      title: 'Gérer les Événements',
-      description: 'Créer et gérer les événements du parti',
-      icon: 'calendar',
-      route: '/manage-events',
-      color: colors.accent,
-    },
-    {
-      id: 'media',
-      title: 'Gérer les Médias',
-      description: 'Ajouter des photos et vidéos',
-      icon: 'photo.fill',
-      route: '/manage-media',
-      color: colors.secondary,
-    },
-    {
-      id: 'members',
-      title: 'Gérer les Membres',
-      description: 'Ajouter, modifier ou supprimer des membres de la direction',
-      icon: 'person.3.fill',
-      route: '/manage-members',
-      color: colors.primary,
-    },
-    {
-      id: 'conference',
-      title: 'Vidéoconférence',
-      description: 'Créer et gérer des vidéoconférences',
-      icon: 'video.fill',
-      route: '/video-conference',
-      color: colors.accent,
-    },
-    {
-      id: 'analytics',
-      title: 'Statistiques',
-      description: 'Voir les statistiques de l\'application',
-      icon: 'chart.bar.fill',
-      route: '/analytics',
-      color: colors.secondary,
-    },
-    {
-      id: 'guide',
-      title: 'Guide Administrateur',
-      description: 'Documentation et aide',
-      icon: 'book.fill',
-      route: '/admin-guide',
-      color: colors.primary,
-    },
-  ];
+  const isDark = colorScheme === 'dark';
+  const themeColors = isDark ? darkColors : lightColors;
+  const { isAdmin, logout } = useAuth();
+  const { news, events, media, members, refreshContent } = useContent();
 
   useEffect(() => {
-    const verifyAuth = async () => {
-      const authenticated = await checkAuth();
-      if (!authenticated) {
-        Alert.alert(
-          'Accès refusé',
-          'Vous devez vous connecter pour accéder à cette page',
-          [
-            {
-              text: 'OK',
-              onPress: () => router.replace('/admin-login'),
-            },
-          ]
-        );
-      }
-    };
-    verifyAuth();
-  }, []);
+    if (!isAdmin) {
+      router.replace('/admin-login');
+    }
+  }, [isAdmin]);
 
   const handleRefresh = async () => {
-    console.log('Refreshing content...');
     await refreshContent();
+    Alert.alert('Succès', 'Contenu actualisé avec succès');
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     Alert.alert(
       'Déconnexion',
-      'Êtes-vous sûr de vouloir vous déconnecter ?',
+      'Êtes-vous sûr de vouloir vous déconnecter?',
       [
         { text: 'Annuler', style: 'cancel' },
         {
@@ -117,259 +47,257 @@ export default function AdminDashboardScreen() {
           style: 'destructive',
           onPress: async () => {
             await logout();
-            router.replace('/');
+            router.replace('/(tabs)/(home)');
           },
         },
       ]
     );
   };
 
-  if (!isAuthenticated) {
-    return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['bottom']}>
-        <View style={styles.unauthorizedContainer}>
-          <IconSymbol name="lock.shield.fill" size={64} color={colors.error} />
-          <Text style={[styles.unauthorizedTitle, { color: colors.text }]}>Accès Non Autorisé</Text>
-          <Text style={[styles.unauthorizedText, { color: colors.textSecondary }]}>
-            Vous devez vous connecter en tant qu&apos;administrateur pour accéder à cette page.
-          </Text>
-          <Pressable
-            style={[buttonStyles.primary, { backgroundColor: colors.primary }]}
-            onPress={() => router.replace('/admin-login')}
-          >
-            <Text style={[buttonStyles.text, { color: colors.white }]}>Se connecter</Text>
-          </Pressable>
-        </View>
-      </SafeAreaView>
-    );
+  const stats = [
+    { label: 'Actualités', value: news.length, icon: 'newspaper.fill' as const, color: colors.primary },
+    { label: 'Événements', value: events.length, icon: 'calendar' as const, color: colors.secondary },
+    { label: 'Médias', value: media.length, icon: 'photo.fill' as const, color: colors.accent },
+    { label: 'Membres', value: members.length, icon: 'person.3.fill' as const, color: colors.success },
+  ];
+
+  const adminActions = [
+    {
+      title: 'Gérer les Actualités',
+      icon: 'newspaper.fill' as const,
+      route: '/manage-news',
+      color: colors.primary,
+    },
+    {
+      title: 'Gérer les Événements',
+      icon: 'calendar' as const,
+      route: '/manage-events',
+      color: colors.secondary,
+    },
+    {
+      title: 'Gérer les Médias',
+      icon: 'photo.fill' as const,
+      route: '/manage-media',
+      color: colors.accent,
+    },
+    {
+      title: 'Gérer les Membres',
+      icon: 'person.3.fill' as const,
+      route: '/manage-members',
+      color: colors.success,
+    },
+    {
+      title: 'Vidéoconférence',
+      icon: 'video.fill' as const,
+      route: '/video-conference',
+      color: colors.info,
+    },
+    {
+      title: 'Analyse',
+      icon: 'chart.bar.fill' as const,
+      route: '/analytics',
+      color: colors.warning,
+    },
+    {
+      title: 'Guide de Build APK',
+      icon: 'hammer.fill' as const,
+      route: '/build-guide',
+      color: colors.primary,
+    },
+    {
+      title: 'Guide Admin',
+      icon: 'book.fill' as const,
+      route: '/admin-guide',
+      color: colors.secondary,
+    },
+  ];
+
+  if (!isAdmin) {
+    return null;
   }
 
   return (
-    <>
+    <SafeAreaView style={[styles.container, { backgroundColor: themeColors.background }]} edges={['bottom']}>
       <Stack.Screen
         options={{
           title: 'Tableau de Bord Admin',
-          headerStyle: {
-            backgroundColor: colors.primary,
-          },
-          headerTintColor: colors.white,
-          headerLeft: () => (
-            <Pressable onPress={() => router.back()} style={{ marginLeft: 8 }}>
-              <IconSymbol name="chevron.left" size={24} color={colors.white} />
-            </Pressable>
-          ),
+          headerStyle: { backgroundColor: themeColors.card },
+          headerTintColor: themeColors.text,
+          headerShadowVisible: false,
           headerRight: () => (
-            <Pressable onPress={handleLogout} style={{ marginRight: 8 }}>
-              <IconSymbol name="rectangle.portrait.and.arrow.right" size={24} color={colors.white} />
+            <Pressable onPress={handleLogout} style={styles.logoutButton}>
+              <IconSymbol name="rectangle.portrait.and.arrow.right" size={24} color={colors.error} />
             </Pressable>
           ),
         }}
       />
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['bottom']}>
-        <ScrollView style={[styles.scrollView, { backgroundColor: colors.background }]} contentContainerStyle={styles.scrollContent}>
-          <View style={styles.section}>
-            <View style={[styles.welcomeCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-              <IconSymbol name="person.circle.fill" size={48} color={colors.primary} />
-              <Text style={[styles.welcomeTitle, { color: colors.text }]}>Bienvenue, Administrateur</Text>
-              <Text style={[styles.welcomeSubtitle, { color: colors.textSecondary }]}>
-                Gérez le contenu de l&apos;application A.R.M
-              </Text>
-            </View>
-          </View>
 
-          <View style={styles.section}>
-            <Text style={[styles.subtitle, { color: colors.primary, marginBottom: 16 }]}>
-              Statistiques Rapides
-            </Text>
-            <View style={styles.statsGrid}>
-              <View style={[styles.statCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                <IconSymbol name="newspaper.fill" size={32} color={colors.primary} />
-                <Text style={[styles.statNumber, { color: colors.text }]}>{news.length}</Text>
-                <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Actualités</Text>
-              </View>
-              <View style={[styles.statCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                <IconSymbol name="calendar" size={32} color={colors.accent} />
-                <Text style={[styles.statNumber, { color: colors.text }]}>{events.length}</Text>
-                <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Événements</Text>
-              </View>
-              <View style={[styles.statCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                <IconSymbol name="photo.fill" size={32} color={colors.secondary} />
-                <Text style={[styles.statNumber, { color: colors.text }]}>{media.length}</Text>
-                <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Médias</Text>
-              </View>
-              <View style={[styles.statCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                <IconSymbol name="person.3.fill" size={32} color={colors.primary} />
-                <Text style={[styles.statNumber, { color: colors.text }]}>{members.length}</Text>
-                <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Membres</Text>
-              </View>
-            </View>
-          </View>
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        {/* Welcome Section */}
+        <View style={[styles.welcomeCard, { backgroundColor: themeColors.card }]}>
+          <IconSymbol name="person.badge.key.fill" size={48} color={colors.primary} />
+          <Text style={[styles.welcomeTitle, { color: themeColors.text }]}>
+            Bienvenue, Administrateur
+          </Text>
+          <Text style={[styles.welcomeSubtitle, { color: themeColors.textSecondary }]}>
+            A.R.M Alliance pour le Rassemblement Malien
+          </Text>
+        </View>
 
-          <View style={styles.section}>
-            <Text style={[styles.subtitle, { color: colors.primary, marginBottom: 16 }]}>
-              Gestion du Contenu
-            </Text>
-            {adminMenuItems.map((item) => (
+        {/* Stats Grid */}
+        <View style={styles.statsGrid}>
+          {stats.map((stat, index) => (
+            <View key={index} style={[styles.statCard, { backgroundColor: themeColors.card }]}>
+              <View style={[styles.statIconContainer, { backgroundColor: stat.color + '20' }]}>
+                <IconSymbol name={stat.icon} size={28} color={stat.color} />
+              </View>
+              <Text style={[styles.statValue, { color: themeColors.text }]}>{stat.value}</Text>
+              <Text style={[styles.statLabel, { color: themeColors.textSecondary }]}>{stat.label}</Text>
+            </View>
+          ))}
+        </View>
+
+        {/* Quick Actions */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: themeColors.text }]}>Actions Rapides</Text>
+          <View style={styles.actionsGrid}>
+            {adminActions.map((action, index) => (
               <Pressable
-                key={item.id}
-                style={[styles.menuItem, { backgroundColor: colors.card, borderColor: colors.border }]}
-                onPress={() => router.push(item.route as any)}
+                key={index}
+                style={[styles.actionCard, { backgroundColor: themeColors.card }]}
+                onPress={() => router.push(action.route as any)}
               >
-                <View style={[styles.menuIcon, { backgroundColor: item.color + '20' }]}>
-                  <IconSymbol name={item.icon as any} size={28} color={item.color} />
+                <View style={[styles.actionIconContainer, { backgroundColor: action.color + '20' }]}>
+                  <IconSymbol name={action.icon} size={24} color={action.color} />
                 </View>
-                <View style={styles.menuContent}>
-                  <Text style={[styles.menuTitle, { color: colors.text }]}>{item.title}</Text>
-                  <Text style={[styles.menuDescription, { color: colors.textSecondary }]}>{item.description}</Text>
-                </View>
-                <IconSymbol name="chevron.right" size={20} color={colors.textSecondary} />
+                <Text style={[styles.actionTitle, { color: themeColors.text }]} numberOfLines={2}>
+                  {action.title}
+                </Text>
               </Pressable>
             ))}
           </View>
+        </View>
 
-          <View style={styles.section}>
-            <Pressable
-              style={[buttonStyles.secondary, { marginBottom: 12, backgroundColor: colors.secondary, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }]}
-              onPress={handleRefresh}
-            >
-              <IconSymbol name="arrow.clockwise" size={20} color={colors.black} />
-              <Text style={[buttonStyles.secondaryText, { color: colors.black }]}>Actualiser le contenu</Text>
-            </Pressable>
+        {/* Refresh Button */}
+        <Pressable
+          style={[buttonStyles.primary, styles.refreshButton]}
+          onPress={handleRefresh}
+        >
+          <IconSymbol name="arrow.clockwise" size={20} color="#FFFFFF" />
+          <Text style={buttonStyles.primaryText}>Actualiser le Contenu</Text>
+        </Pressable>
 
-            <Pressable
-              style={[buttonStyles.outline, { borderColor: colors.error, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }]}
-              onPress={handleLogout}
-            >
-              <IconSymbol name="rectangle.portrait.and.arrow.right" size={20} color={colors.error} />
-              <Text style={[buttonStyles.textOutline, { color: colors.error, marginLeft: 8 }]}>
-                Se déconnecter
-              </Text>
-            </Pressable>
-          </View>
-        </ScrollView>
-      </SafeAreaView>
-    </>
+        <View style={styles.bottomSpacer} />
+      </ScrollView>
+    </SafeAreaView>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    width: '100%',
-    height: '100%',
   },
   scrollView: {
     flex: 1,
   },
-  scrollContent: {
-    paddingBottom: 40,
-  },
-  unauthorizedContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  unauthorizedTitle: {
-    fontSize: 24,
-    fontWeight: '700',
-    marginTop: 20,
-    marginBottom: 12,
-  },
-  unauthorizedText: {
-    fontSize: 16,
-    textAlign: 'center',
-    marginBottom: 24,
-    lineHeight: 24,
-  },
-  section: {
-    width: '100%',
-    paddingHorizontal: 20,
-    marginBottom: 24,
+  logoutButton: {
+    padding: 8,
+    marginRight: 8,
   },
   welcomeCard: {
-    borderRadius: 16,
+    margin: 16,
     padding: 24,
+    borderRadius: 16,
     alignItems: 'center',
-    borderWidth: 1,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 4,
   },
   welcomeTitle: {
     fontSize: 24,
-    fontWeight: '700',
+    fontWeight: 'bold',
     marginTop: 16,
+    textAlign: 'center',
   },
   welcomeSubtitle: {
     fontSize: 16,
     marginTop: 8,
     textAlign: 'center',
   },
-  subtitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    marginBottom: 10,
-  },
   statsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
+    paddingHorizontal: 8,
+    marginBottom: 8,
   },
   statCard: {
-    flex: 1,
-    minWidth: '45%',
+    width: '47%',
+    margin: '1.5%',
+    padding: 16,
     borderRadius: 12,
-    padding: 20,
     alignItems: 'center',
-    borderWidth: 1,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
   },
-  statNumber: {
+  statIconContainer: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+  },
+  statValue: {
     fontSize: 32,
-    fontWeight: '700',
-    marginTop: 12,
+    fontWeight: 'bold',
+    marginBottom: 4,
   },
   statLabel: {
     fontSize: 14,
-    marginTop: 4,
+    textAlign: 'center',
   },
-  menuItem: {
+  section: {
+    paddingHorizontal: 16,
+    marginTop: 8,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 16,
+  },
+  actionsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginHorizontal: -8,
+  },
+  actionCard: {
+    width: '47%',
+    margin: '1.5%',
+    padding: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    minHeight: 120,
+    justifyContent: 'center',
+  },
+  actionIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+  },
+  actionTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  refreshButton: {
+    marginHorizontal: 16,
+    marginTop: 24,
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    borderWidth: 1,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  menuIcon: {
-    width: 56,
-    height: 56,
-    borderRadius: 12,
     justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 16,
+    gap: 8,
   },
-  menuContent: {
-    flex: 1,
-  },
-  menuTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 4,
-  },
-  menuDescription: {
-    fontSize: 14,
+  bottomSpacer: {
+    height: 32,
   },
 });
+
+export default AdminDashboardScreen;
