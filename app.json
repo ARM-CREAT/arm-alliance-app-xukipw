@@ -1,7 +1,7 @@
 
 {
   "expo": {
-    "name": "A.R.M Alliance Mali",
+    "name": "A.R.M Alliance",
     "slug": "arm-alliance-app-xukipw",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -27,7 +27,7 @@
         "backgroundColor": "#000000"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.bouadiakitearmmali.app",
+      "package": "com.armmali.app",
       "versionCode": 1,
       "permissions": [
         "INTERNET",
@@ -60,7 +60,7 @@
         }
       ]
     ],
-    "scheme": "natively",
+    "scheme": "armmali",
     "experiments": {
       "typedRoutes": true
     },
