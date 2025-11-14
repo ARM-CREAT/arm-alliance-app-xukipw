@@ -1,7 +1,6 @@
-
 {
   "expo": {
-    "name": "A.R.M Alliance",
+    "name": "arm-alliance-app-xukipw",
     "slug": "arm-alliance-app-xukipw",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -49,14 +48,14 @@
       [
         "expo-av",
         {
-          "microphonePermission": "Autoriser l'application à accéder au microphone pour les vidéoconférences."
+          "microphonePermission": "Autoriser l'application \u00e0 acc\u00e9der au microphone pour les vid\u00e9oconf\u00e9rences."
         }
       ],
       [
         "expo-image-picker",
         {
-          "photosPermission": "L'application a besoin d'accéder à vos photos pour télécharger des images.",
-          "cameraPermission": "L'application a besoin d'accéder à votre caméra pour prendre des photos."
+          "photosPermission": "L'application a besoin d'acc\u00e9der \u00e0 vos photos pour t\u00e9l\u00e9charger des images.",
+          "cameraPermission": "L'application a besoin d'acc\u00e9der \u00e0 votre cam\u00e9ra pour prendre des photos."
         }
       ]
     ],
@@ -70,5 +69,6 @@
         "projectId": "votre-project-id-ici"
       }
     }
-  }
+  },
+  "scheme": "A.R.M Alliance"
 }

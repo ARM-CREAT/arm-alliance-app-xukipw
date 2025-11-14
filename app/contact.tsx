@@ -6,6 +6,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { IconSymbol } from "@/components/IconSymbol";
 import { colors, commonStyles, buttonStyles } from "@/styles/commonStyles";
 import { useLanguage } from "@/contexts/LanguageContext";
+import * as Haptics from 'expo-haptics';
+import { Platform } from 'react-native';
 
 export default function ContactScreen() {
   const { t } = useLanguage();
@@ -77,6 +79,20 @@ export default function ContactScreen() {
       .catch(() => {
         Alert.alert(t('common.error'), t('profile.error.cannotEmail'));
       });
+  };
+
+  const handleShowQRCode = () => {
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    }
+    router.push({
+      pathname: '/qr-code',
+      params: {
+        type: 'contact',
+        data: 'contact',
+        title: 'Contact A.R.M',
+      },
+    });
   };
 
   return (
@@ -161,6 +177,14 @@ export default function ContactScreen() {
                 >
                   <IconSymbol name="envelope.fill" size={20} color={colors.white} />
                   <Text style={styles.quickActionText}>{t('profile.action.email')}</Text>
+                </Pressable>
+
+                <Pressable 
+                  style={[styles.quickActionButton, { backgroundColor: colors.highlight }]}
+                  onPress={handleShowQRCode}
+                >
+                  <IconSymbol name="qrcode" size={20} color={colors.white} />
+                  <Text style={styles.quickActionText}>QR Code</Text>
                 </Pressable>
               </View>
             </View>

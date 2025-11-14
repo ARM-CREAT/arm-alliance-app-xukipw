@@ -48,6 +48,20 @@ Téléchargez notre application pour en savoir plus sur nos programmes et nos ac
     }
   };
 
+  const handleQRCode = () => {
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    }
+    router.push({
+      pathname: '/qr-code',
+      params: {
+        type: 'app',
+        data: 'https://arm-mali.org',
+        title: 'A.R.M Alliance Mali',
+      },
+    });
+  };
+
   const socialPlatforms = [
     {
       id: 'whatsapp',
@@ -80,10 +94,11 @@ Téléchargez notre application pour en savoir plus sur nos programmes et nos ac
       color: colors.highlight,
     },
     {
-      id: 'more',
-      name: 'Plus',
-      icon: 'square.and.arrow.up.fill',
+      id: 'qrcode',
+      name: 'QR Code',
+      icon: 'qrcode',
       color: colors.primary,
+      action: handleQRCode,
     },
   ];
 
@@ -125,7 +140,7 @@ Téléchargez notre application pour en savoir plus sur nos programmes et nos ac
                 <Pressable
                   key={platform.id}
                   style={styles.platformCard}
-                  onPress={() => handleShare(platform.id)}
+                  onPress={() => platform.action ? platform.action() : handleShare(platform.id)}
                 >
                   <View style={[styles.platformIcon, { backgroundColor: platform.color }]}>
                     <IconSymbol name={platform.icon} size={32} color={colors.white} />
